@@ -2,41 +2,34 @@ package pre_lecture.ex2;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Solution {
-    public static final int BUFMAX = 100_000 + 10;
 
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8), BUFMAX);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+    public static void main(String[] args) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out))) {
+            String line = br.readLine();
+            int t = Integer.valueOf(line);
 
-        String line = br.readLine();
-        int t = Integer.parseInt(line);
+            for (int test_case = 1; test_case <= t; ++test_case) {
 
-        for (int test_case = 1; test_case <= t; ++test_case) {
+                String[] splitted = br.readLine().split(" ");
+                String n = splitted[0];
+                char x = splitted[1].charAt(0);
+                char y = splitted[2].charAt(0);
 
-            int codePoint = 0;
-            StringBuilder str = new StringBuilder(BUFMAX);
-            do {
-                codePoint = br.read();
-                str.appendCodePoint(codePoint);
-            } while (codePoint != '\n');
+                String submit = solution(n, x, y);
+                bw.write(String.format("#%d %s\n", test_case, submit));
+                bw.flush();
+            }
 
-            bw.write(String.format("length: %d%n", str.length()));
-            bw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        br.close();
-        bw.flush();
-        bw.close();
     }
 
     /**
@@ -67,16 +60,29 @@ public class Solution {
             } else if (cur == x) {
 
                 str.append(x);
-            } else /* cur < x */ {// 자릿수 하나를 내려버린 뒤 y로 도배할 것
+            } else /* cur < x */ {// 앞 자리수를 거슬러 올라간 뒤 y로 도배할 것
 
-                str = new StringBuilder();
-                str.append(fill(y, n.length() - 1));
+                int backIdx = idx - 1;
+                for (; backIdx > 0 && str.charAt(backIdx) == x; --backIdx)
+                    ;
+                if (str.length() != 0) {
+                    str.delete(backIdx, idx);
+                    if (n.charAt(backIdx) > x) {
+                        str.append(x);
+                    }
+                    str.append(fill(y, n.length() - backIdx - 1));
+                } else {
+                    str = new StringBuilder();
+                    str.append(fill(y, n.length() - 1));
+                }
                 break;
             }
         }
 
-        if (str.length() == 0 ||
-                (str.length() == 1 && str.charAt(0) == '0')) {
+        if (str.length() > 0 && str.charAt(0) == '0') {
+            str.deleteCharAt(0);
+        }
+        if (str.length() == 0) {
             return "-1";
         }
         return str.toString();

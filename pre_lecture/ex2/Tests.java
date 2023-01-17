@@ -67,7 +67,7 @@ public class Tests {
         String n = "422223324";
         char x = '3';
         char y = '4';
-        String answer = "44444444";
+        String answer = "344444444";
         String submit = Solution.solution(n, x, y);
         assertEquals(answer, submit);
 
@@ -180,6 +180,36 @@ public class Tests {
         char x = '0';
         char y = '2';
         String answer = "222022";
+        String submit = Solution.solution(n, x, y);
+        assertEquals(answer, submit);
+    }
+
+    @Test
+    public void sol9() {
+        String n = "22221";
+        char x = '2';
+        char y = '4';
+        String answer = "4444";
+        String submit = Solution.solution(n, x, y);
+        assertEquals(answer, submit);
+    }
+
+    @Test
+    public void sol10() {
+        String n = "59999";
+        char x = '0';
+        char y = '6';
+        String answer = "6666";
+        String submit = Solution.solution(n, x, y);
+        assertEquals(answer, submit);
+    }
+
+    @Test
+    public void sol11() {
+        String n = "4412";
+        char x = '2';
+        char y = '4';
+        String answer = "4244";
         String submit = Solution.solution(n, x, y);
         assertEquals(answer, submit);
     }
