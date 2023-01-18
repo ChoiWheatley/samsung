@@ -1,6 +1,8 @@
 #include "solution.hpp"
+#include <algorithm>
 #include <functional>
 #include <gtest/gtest.h>
+#include <random>
 
 using namespace std;
 
@@ -129,7 +131,15 @@ TEST(SOL, 1)
 {
     const string test = "BC";
     uint64_t answer = 29;
-    uint64_t submit = solution(test);
+    uint64_t submit = sol1::solution(test);
+    ASSERT_EQ(answer, submit);
+}
+
+TEST(SOL, 1_1)
+{
+    const string test = "BC";
+    uint64_t answer = 29;
+    uint64_t submit = sol2::solution(test);
     ASSERT_EQ(answer, submit);
 }
 
@@ -137,6 +147,24 @@ TEST(SOL, 2)
 {
     const string test = "ADCBBACDCBCBACBDCABDCBA";
     uint64_t answer = 88253169;
-    uint64_t submit = solution(test);
+    uint64_t submit = sol2::solution(test);
     ASSERT_EQ(answer, submit);
+}
+
+TEST(TIMEOUT, 1)
+{
+    const int MAX = 100000;
+
+    random_device seeder;
+    const auto seed{seeder.entropy() == 0.0 ? seeder() : time(nullptr)};
+    mt19937 engine{static_cast<mt19937::result_type>(seed)};
+    uniform_int_distribution<char> dist('A', 'D');
+
+    stringstream stream{};
+    for (int i = 0; i < MAX; ++i)
+    {
+        stream << dist(engine);
+    }
+    sol2::solution(stream.str());
+    // cout << stream.str() << "\n";
 }

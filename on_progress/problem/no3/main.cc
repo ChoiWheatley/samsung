@@ -13,7 +13,7 @@ int main(void)
     {
         std::string str;
         std::cin >> str;
-        uint64_t submit = solution(str);
+        uint64_t submit = sol2::solution(str);
         std::cout << "#" << test_case << " " << submit << "\n";
     }
     return 0;
