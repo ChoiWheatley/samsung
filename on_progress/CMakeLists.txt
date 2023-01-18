@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9) # 요구 CMake 최소 버전
+cmake_minimum_required(VERSION 3.16) # 요구 CMake 최소 버전
 project("bak") # 프로젝트 이름 및 버전
 
 set(CMAKE_CXX_STANDARD 14)
@@ -26,8 +26,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-file(GLOB_RECURSE SOURCE_FILES "main.cc")
-file(GLOB_RECURSE TEST_FILES "tests.cc")
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "main.cc")
+file(GLOB_RECURSE TEST_FILES CONFIGURE_DEPENDS "tests.cc")
 
 # ################################################
 # compile source files
