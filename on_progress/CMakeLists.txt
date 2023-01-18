@@ -26,8 +26,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-file(GLOB_RECURSE SOURCE_FILES "problem/main*")
-file(GLOB_RECURSE TEST_FILES "problem/tests*")
+file(GLOB_RECURSE SOURCE_FILES "main.cc")
+file(GLOB_RECURSE TEST_FILES "tests.cc")
 
 # ################################################
 # compile source files
