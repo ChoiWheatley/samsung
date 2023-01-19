@@ -64,6 +64,10 @@ foreach(TEST_PATH ${TEST_FILES})
     message("@@@@ TEST_TARGET : ${TEST_TARGET}")
 
     add_executable(${TEST_TARGET} ${TEST_PATH})
+    set_target_properties(${TEST_TARGET}
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
     target_link_libraries(${TEST_TARGET} PUBLIC GTest::gtest_main)
     include(GoogleTest)
     gtest_discover_tests(${TEST_TARGET})
