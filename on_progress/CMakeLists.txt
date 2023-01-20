@@ -29,6 +29,8 @@ FetchContent_MakeAvailable(googletest)
 file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "main.cc")
 file(GLOB_RECURSE TEST_FILES CONFIGURE_DEPENDS "tests.cc")
 
+include_directories(useful)
+
 # ################################################
 # compile source files
 # ################################################
