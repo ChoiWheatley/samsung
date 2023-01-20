@@ -1,12 +1,16 @@
 #include "solution.hpp"
+#include "gtest/gtest.h"
 #include <algorithm>
 #include <cstddef>
 #include <gtest/gtest.h>
+#include <limits>
+#include <memory>
 #include <random>
 #include <vector>
 
 using namespace std;
-constexpr size_t MAX = 10000;
+using sol2::CodeContainer;
+constexpr size_t MAX = 100000;
 
 struct Random {
   random_device seeder;
@@ -22,7 +26,7 @@ struct Random {
 
 TEST(CONT, add1) {
   Random r{};
-  sol1::CodeContainer cont{};
+  CodeContainer cont{};
   vector<code_t> sample{};
   for (int i = 0; i < MAX; ++i) {
     sample.push_back(r.next());
@@ -41,7 +45,7 @@ TEST(CONT, add1) {
 
 TEST(CONT, add_all1) {
   Random r{};
-  sol1::CodeContainer cont{};
+  CodeContainer cont{};
   vector<code_t> sample{};
   for (int i = 0; i < MAX; ++i) {
     sample.push_back(r.next());
@@ -49,8 +53,8 @@ TEST(CONT, add_all1) {
   for (code_t elem : sample) {
     cont.add(elem);
   }
-  sol1::CodeContainer cont2{};
-  cont2.add_all(std::move(cont));
+  CodeContainer cont2{};
+  cont2.add_all(cont);
   vector<code_t> answer{};
   for (auto iter = cont2.begin(); iter != cont2.end(); iter = iter->next) {
     answer.push_back(iter->data);
@@ -60,8 +64,8 @@ TEST(CONT, add_all1) {
 
 TEST(CONT, insert1) {
   vector<code_t> sample({1, 2, 5, 6});
-  sol1::CodeContainer cont1{};
-  sol1::CodeContainer cont2{};
+  CodeContainer cont1{};
+  CodeContainer cont2{};
   for (code_t elem : sample) {
     cont1.add(elem);
   }
@@ -81,7 +85,7 @@ TEST(CONT, insert1) {
 TEST(CONT, del1) {
   vector<code_t> sample({1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5});
   vector<code_t> answer({1, 2, 3, 4, 5});
-  sol1::CodeContainer cont{};
+  CodeContainer cont{};
   for (auto elem : sample) {
     cont.add(elem);
   }
@@ -95,5 +99,54 @@ TEST(CONT, del1) {
   for (auto elem : answer) {
     ASSERT_EQ(elem, iter->data);
     iter = iter->next;
+  }
+}
+
+/** OK for raw pointers */
+TEST(StackOverFlow, RawPointer) {
+
+  Random r{};
+  struct Node {
+    code_t data;
+    Node *next = nullptr;
+    explicit Node(code_t data) : data(data){};
+  };
+  Node *head = new Node(0);
+  Node *prev = head;
+  for (int i = 1; i < MAX * 2; ++i) {
+    prev->next = new Node(r.next());
+    prev = prev->next;
+  }
+}
+
+TEST(StackOverFlow, UniquePointer) {
+
+  Random r{};
+  struct Node {
+    code_t data;
+    unique_ptr<Node> next = nullptr;
+    explicit Node(code_t data) : data{data} {};
+  };
+  auto head = make_unique<Node>(0);
+  Node *prev = head.get();
+  for (int i = 1; i < MAX; ++i) {
+    prev->next = make_unique<Node>(r.next());
+    prev = prev->next.get();
+  }
+}
+
+TEST(StackOverFlow, SharedPointer) {
+
+  Random r{};
+  struct Node {
+    code_t data;
+    shared_ptr<Node> next = nullptr;
+    explicit Node(code_t data) : data{data} {};
+  };
+  auto head = make_shared<Node>(0);
+  auto prev = head;
+  for (int i = 1; i < MAX; ++i) {
+    prev->next = make_shared<Node>(r.next());
+    prev = prev->next;
   }
 }

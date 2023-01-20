@@ -1,7 +1,7 @@
 #include "solution.hpp"
 #include <iostream>
 
-using sol1::CodeContainer;
+using sol2::CodeContainer;
 using std::cin;
 using std::cout;
 
@@ -26,7 +26,7 @@ static auto instruction_parser(CodeContainer &cont, char inst) -> void {
       std::cin >> input;
       newbie.add(input);
     }
-    cont.insert_all(x, std::move(newbie));
+    cont.insert_all(x, newbie);
     break;
   }
 
@@ -47,7 +47,7 @@ static auto instruction_parser(CodeContainer &cont, char inst) -> void {
       std::cin >> input;
       newbie.add(input);
     }
-    cont.add_all(std::move(newbie));
+    cont.add_all(newbie);
     break;
   }
 
