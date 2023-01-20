@@ -15,6 +15,8 @@ set(MY_TEST_TARGET MY_TEST)
 # 공통 컴파일 옵션
 add_compile_options(-Wall)
 
+include_directories(useful)
+
 # Googlt Test
 # declare a dependency on GoogleTest which is downloaded from github
 # FetchContent : https://cmake.org/cmake/help/latest/module/FetchContent.html
@@ -28,8 +30,6 @@ FetchContent_MakeAvailable(googletest)
 
 file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "main.cc")
 file(GLOB_RECURSE TEST_FILES CONFIGURE_DEPENDS "tests.cc")
-
-include_directories(useful)
 
 # ################################################
 # compile source files
