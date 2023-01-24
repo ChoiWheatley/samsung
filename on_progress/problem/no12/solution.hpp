@@ -52,6 +52,15 @@ private:
   const char *desc;
 };
 
+template <class Consumer>
+auto foreach_token(const string &glob, char delim, Consumer const &consumer) {
+  stringstream stream{glob};
+  string token = "";
+  while (std::getline(stream, token, delim)) {
+    consumer(token);
+  }
+}
+
 class DirectoryController {
 public:
   explicit DirectoryController() = default;
@@ -71,21 +80,22 @@ public:
   */
   template <class Consumer>
   auto get(const string &path, const Consumer &trace) -> Directory * {
-    stringstream stream(path);
-    string token = "";
-
     Directory *cur = root;
-    if (stream.peek() == '/') {
-      stream.ignore(1); // cwd 개념이 없다. 첫 글자는 무조건 '/'이다.
-    }
-    while (std::getline(stream, token, '/')) {
-      auto iter = cur->children.find(token);
-      if (iter == cur->children.end()) { // not found
-        return nullptr;
+    foreach_token(path, '/', [&](string const &token) {
+      if (cur == nullptr) {
+        return;
       }
-      trace(cur);
-      cur = iter->second;
-    }
+      if (!token.empty()) {
+        auto iter = cur->children.find(token);
+        if (iter == cur->children.end()) { // not found
+          cur = nullptr;
+        } else {
+          trace(cur);
+          cur = iter->second;
+        }
+      }
+      return;
+    });
     return cur;
   }
 
@@ -177,9 +187,10 @@ public:
   }
 
 private:
-  Directory *root;
-  size_t cache_top = 0;
   vector<Directory> cache{MAX_N, Directory()};
+  Directory *root = &cache[0];
+  size_t cache_top = 1;
+  map<string, Directory *> m_full_path_map;
 
   auto new_dir(string &&name) -> Directory * {
     if (cache_top >= cache.size()) {
