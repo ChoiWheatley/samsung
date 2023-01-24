@@ -139,6 +139,29 @@ TEST(Timeout, 2) {
   }
 }
 
+TEST(Timeout, 3) {
+  string path_str = "/";
+  Directory root{path_str};
+  std::map<string, Directory *> full_path_map;
+
+  full_path_map.insert({path_str, &root});
+
+  for (size_t i = 0; i < MAX; ++i) {
+    // 1. find by full path
+    auto itr = full_path_map.find(path_str);
+    if (itr == full_path_map.end()) {
+      throw dir_not_found{};
+    }
+    auto *cur = itr->second;
+    // 2. add new child from leaf node
+    auto newname = std::to_string(i);
+    auto *newbie = new Directory(newname);
+    cur->children.emplace(newbie->name, newbie);
+    path_str += newname + "/";
+    full_path_map.insert({path_str, newbie});
+  }
+}
+
 } // namespace Timeout
 
 namespace MAP_TEST {
