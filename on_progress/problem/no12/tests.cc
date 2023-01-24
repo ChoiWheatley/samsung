@@ -1,9 +1,13 @@
 #include "solution.hpp"
+#include <algorithm>
 #include <gtest/gtest.h>
+#include <iterator>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
+
+using std::all_of;
 
 TEST(Getline, delim) {
   string path = "/a/b/c/";
@@ -25,9 +29,9 @@ TEST(MKDIR, 1) {
   dir.cmd_mkdir("/", "hello");
   dir.cmd_mkdir("/hello/", "my");
   dir.cmd_mkdir("/hello/my/", "name");
-  dir.cmd_mkdir("/hello/my/name", "is");
-  dir.cmd_mkdir("/hello/my/name/is", "choi");
-  dir.cmd_mkdir("/hello/my/name/is", "park");
+  dir.cmd_mkdir("/hello/my/name/", "is");
+  dir.cmd_mkdir("/hello/my/name/is/", "choi");
+  dir.cmd_mkdir("/hello/my/name/is/", "park");
   ASSERT_EQ(6, dir.cmd_find("/"));
   ASSERT_EQ(2, dir.cmd_find("/hello/my/name/is/"));
 }
@@ -44,13 +48,13 @@ TEST(RMDIR, 1) {
   dir.cmd_mkdir("/", "hello4");
   dir.cmd_mkdir("/hello/", "my");
   dir.cmd_mkdir("/hello/my/", "name");
-  dir.cmd_mkdir("/hello/my/name", "is");
-  dir.cmd_mkdir("/hello/my/name/is", "choi");
-  dir.cmd_mkdir("/hello/my/name/is", "park");
+  dir.cmd_mkdir("/hello/my/name/", "is");
+  dir.cmd_mkdir("/hello/my/name/is/", "choi");
+  dir.cmd_mkdir("/hello/my/name/is/", "park");
   ASSERT_EQ(9, dir.cmd_find("/"));
   dir.cmd_rm("/hello/");
   ASSERT_EQ(3, dir.cmd_find("/"));
-  ASSERT_THROW(dir.cmd_find("/hello/my/name/is/choi"),
+  ASSERT_THROW(dir.cmd_find("/hello/my/name/is/choi/"),
                decltype(dir_not_found{}));
 }
 
@@ -59,16 +63,16 @@ TEST(CP, 1) {
   dir.cmd_mkdir("/", "hello");
   dir.cmd_mkdir("/hello/", "my");
   dir.cmd_mkdir("/hello/my/", "name");
-  dir.cmd_mkdir("/hello/my/name", "is");
-  dir.cmd_mkdir("/hello/my/name/is", "choi");
-  dir.cmd_mkdir("/hello/my/name/is", "park");
+  dir.cmd_mkdir("/hello/my/name/", "is");
+  dir.cmd_mkdir("/hello/my/name/is/", "choi");
+  dir.cmd_mkdir("/hello/my/name/is/", "park");
 
   dir.cmd_mkdir("/", "hello2");
-  dir.cmd_cp("/hello/my", "/hello2/");
-  ASSERT_EQ(0, dir.cmd_find("/hello2/my/name/is/choi"));
-  ASSERT_EQ(0, dir.cmd_find("/hello2/my/name/is/park"));
-  ASSERT_EQ(0, dir.cmd_find("hello/my/name/is/choi"));
-  ASSERT_EQ(0, dir.cmd_find("/hello/my/name/is/park"));
+  dir.cmd_cp("/hello/my/", "/hello2/");
+  ASSERT_EQ(0, dir.cmd_find("/hello2/my/name/is/choi/"));
+  ASSERT_EQ(0, dir.cmd_find("/hello2/my/name/is/park/"));
+  ASSERT_EQ(0, dir.cmd_find("/hello/my/name/is/choi/"));
+  ASSERT_EQ(0, dir.cmd_find("/hello/my/name/is/park/"));
 }
 
 TEST(MV, 1) {
@@ -76,15 +80,15 @@ TEST(MV, 1) {
   dir.cmd_mkdir("/", "hello");
   dir.cmd_mkdir("/hello/", "my");
   dir.cmd_mkdir("/hello/my/", "name");
-  dir.cmd_mkdir("/hello/my/name", "is");
-  dir.cmd_mkdir("/hello/my/name/is", "choi");
-  dir.cmd_mkdir("/hello/my/name/is", "park");
+  dir.cmd_mkdir("/hello/my/name/", "is");
+  dir.cmd_mkdir("/hello/my/name/is/", "choi");
+  dir.cmd_mkdir("/hello/my/name/is/", "park");
 
   dir.cmd_mkdir("/", "hello2");
-  dir.cmd_mv("/hello/my", "/hello2/");
-  ASSERT_EQ(0, dir.cmd_find("/hello2/my/name/is/choi"));
-  ASSERT_EQ(0, dir.cmd_find("/hello2/my/name/is/park"));
-  ASSERT_THROW(dir.cmd_find("/hello/my"), decltype(dir_not_found{}));
+  dir.cmd_mv("/hello/my/", "/hello2/");
+  ASSERT_EQ(0, dir.cmd_find("/hello2/my/name/is/choi/"));
+  ASSERT_EQ(0, dir.cmd_find("/hello2/my/name/is/park/"));
+  ASSERT_THROW(dir.cmd_find("/hello/my/"), decltype(dir_not_found{}));
 }
 
 TEST(SOL, 1) {
@@ -204,3 +208,50 @@ TEST(Map, Timeout4) {
   }
 }
 } // namespace MAP_TEST
+
+TEST(String, TokenFromTheLast) {
+  string sample_str = "/a/b/c/d/e/";
+  string answer = "e";
+
+  if (*sample_str.rbegin() == '/') { // strip the last '/'
+    sample_str.erase(sample_str.size() - 1, 1);
+  }
+
+  auto itr = sample_str.rbegin();
+  auto before = itr;
+  for (; itr != sample_str.rend() && *(itr.base()) != '/'; ++itr) {
+    before = itr;
+  }
+
+  auto submit =
+      sample_str.substr(std::distance(sample_str.begin(), before.base()), 2);
+  ASSERT_EQ(answer, submit);
+}
+
+TEST(String, TokenFromTheLast2) {
+  string sample_str = "/a/b/c/d/e/";
+  string answer = "e";
+  auto const itr_pair = last_token(sample_str, '/');
+  auto pos = std::distance(sample_str.cbegin(), itr_pair.first);
+  auto len = std::distance(itr_pair.first, itr_pair.second);
+  string submit = sample_str.substr(pos, len);
+  ASSERT_EQ(answer, submit);
+}
+TEST(String, TokenFromTheLast3) {
+  string sample_str = "/abcde";
+  string answer = "abcde";
+  auto const itr_pair = last_token(sample_str, '/');
+  auto pos = std::distance(sample_str.cbegin(), itr_pair.first);
+  auto len = std::distance(itr_pair.first, itr_pair.second);
+  string submit = sample_str.substr(pos, len);
+  ASSERT_EQ(answer, submit);
+}
+TEST(String, TokenFromTheLast4) {
+  string sample_str = "/aa/bb/cc";
+  string answer = "cc";
+  auto const itr_pair = last_token(sample_str, '/');
+  auto pos = std::distance(sample_str.cbegin(), itr_pair.first);
+  auto len = std::distance(itr_pair.first, itr_pair.second);
+  string submit = sample_str.substr(pos, len);
+  ASSERT_EQ(answer, submit);
+}

@@ -9,18 +9,23 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #define NAME_MAXLEN 6
 #define PATH_MAXLEN 1999
 
 using std::map;
+using std::set;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
 constexpr size_t MAX_N = 50000;
+
+struct Directory;
+auto compare(Directory *a_ptr, Directory const *b_ptr) -> bool;
 
 struct Directory {
   string name;
@@ -34,13 +39,13 @@ struct Directory {
   auto operator<(const Directory &o) const { return name < o.name; };
 };
 
-inline bool operator<(const Directory &a, const Directory &b) {
-  return a.name < b.name;
+auto compare(Directory *a_ptr, Directory const *b_ptr) -> bool {
+  return a_ptr->name < b_ptr->name;
 }
 
 struct dir_not_found : std::exception {
   explicit dir_not_found() = default;
-  explicit dir_not_found(const char *raw_string) : desc(raw_string){};
+  explicit dir_not_found(const char raw_string[]) : desc(raw_string){};
   const char *what() const noexcept override {
     auto *ret = new char[100];
     std::strcat(ret, "directory cannot be found! :: ");
@@ -52,6 +57,10 @@ private:
   const char *desc;
 };
 
+struct cache_out_of_bounds : std::exception {
+  const char *what() const noexcept override { return "cache size exceeds!"; }
+};
+
 template <class Consumer>
 auto foreach_token(const string &glob, char delim, Consumer const &consumer) {
   stringstream stream{glob};
@@ -61,13 +70,27 @@ auto foreach_token(const string &glob, char delim, Consumer const &consumer) {
   }
 }
 
+inline auto last_token(const string &glob, char delim)
+    -> std::pair<decltype(glob.begin()), decltype(glob.end())> {
+  auto itr = glob.rbegin();
+  auto end = glob.rbegin();
+  if (*glob.rbegin() == delim) { // strip the last deilm
+    itr++;
+    end++;
+  }
+
+  for (; itr != glob.rend() && *itr != delim; itr++)
+    ;
+  return {itr.base(), end.base()};
+}
+
 class DirectoryController {
 public:
-  explicit DirectoryController() = default;
   explicit DirectoryController(size_t size) : cache{size * 2, Directory()} {
     root = &cache[cache_top];
     cache_top += 1;
     root->name = "/";
+    m_full_path_map.insert({root->name, root});
   };
 
   /**
@@ -81,7 +104,7 @@ public:
   template <class Consumer>
   auto get(const string &path, const Consumer &trace) -> Directory * {
     Directory *cur = root;
-    foreach_token(path, '/', [&](string const &token) {
+    foreach_token(path, '/', [&cur, &trace](string const &token) {
       if (cur == nullptr) {
         return;
       }
@@ -109,47 +132,55 @@ public:
                  []([[maybe_unused]] Directory const *cur) { /*do nothing*/ });
   }
 
+  auto get_full_path(const string &path) -> Directory * {
+    auto itr = m_full_path_map.find(path);
+    if (itr == m_full_path_map.end()) {
+      throw dir_not_found{path.c_str()};
+    }
+    return itr->second;
+  }
+
   /**
   path 디렉터리의 하위에 name 이름을 가진 새로운 디렉터리를 생성한다.
   */
-  auto cmd_mkdir(const string &path, string &&name) -> void {
-    Directory *cur = get(path);
-    if (cur == nullptr) {
-      throw dir_not_found(path.c_str());
-    }
-    Directory *newbie = new_dir(std::move(name));
-    cur->children.emplace(newbie->name, newbie);
+  auto cmd_mkdir(const string &path, string &&name) -> Directory * {
+    string full_path = path + name + "/";
+    auto itr = get_full_path(path);
+    auto *newbie = new_dir(std::move(name));
+    itr->children.insert({newbie->name, newbie});
+    m_full_path_map.insert({full_path, newbie});
+
+    return newbie;
   }
 
   /**
   path 디렉터리와 그 모든 하위 디렉터리를 삭제한다.
   */
   auto cmd_rm(const string &path) -> void {
-    Directory *cur = root;
-    Directory *parent = nullptr;
-    cur = get<>(path, [&parent](Directory *p) { parent = p; });
-    if (cur == nullptr) {
-      throw dir_not_found{path.c_str()};
+    if (path == "/") {
+      return; // cannot delete root
     }
+
+    auto last_token_itr = last_token(path, '/');
+    string parent_path =
+        path.substr(0, std::distance(path.cbegin(), last_token_itr.first));
+
+    Directory *cur = get_full_path(path);
+    Directory *parent = get_full_path(parent_path);
     rm_recur(cur);
     // 마침내 parent의 자식 중 cur를 삭제한다.
     parent->children.erase(cur->name);
+    m_full_path_map.erase(path);
   }
 
   /**
   dst_path의 하위에 src_path의 디렉터리와 그 모든 하위 디렉터리들을 복사한다.
   */
   auto cmd_cp(const string &src_path, const string &dst_path) {
-    Directory *dst = get(dst_path);
-    Directory const *src = get(src_path);
-    if (dst == nullptr) {
-      throw dir_not_found{dst_path.c_str()};
-    }
-    if (src == nullptr) {
-      throw dir_not_found{src_path.c_str()};
-    }
-    Directory *clone = cp_recur(src);
-    dst->children.emplace(clone->name, clone);
+    Directory *dst = get_full_path(dst_path);
+    Directory const *src = get_full_path(src_path);
+    Directory *clone = cp_recur(src, string{dst_path});
+    dst->children.insert({clone->name, clone});
   }
 
   /**
@@ -187,16 +218,16 @@ public:
   }
 
 private:
-  vector<Directory> cache{MAX_N, Directory()};
+  vector<Directory> cache{MAX_N * 2, Directory()};
   Directory *root = &cache[0];
   size_t cache_top = 1;
-  map<string, Directory *> m_full_path_map;
+  map<string, Directory *> m_full_path_map; // "/a/b/c/"
 
   auto new_dir(string &&name) -> Directory * {
     if (cache_top >= cache.size()) {
-      cache.reserve(cache.size() * 2);
+      throw cache_out_of_bounds{};
     }
-    Directory &ret = cache[cache_top];
+    Directory &ret = cache.at(cache_top);
     cache_top++;
     ret.name = std::move(name);
     return &ret;
@@ -214,11 +245,12 @@ private:
   /**
   target과 그 하위 디렉토리들을 모두 복제한 새 디렉토리를 리턴한다.
   */
-  auto cp_recur(Directory const *target) -> Directory * {
-    Directory *newbie = new_dir(string{target->name});
+  auto cp_recur(Directory const *target, string &&full_path) -> Directory * {
+    Directory *newbie = cmd_mkdir(full_path, string{target->name});
     for (auto const &child : target->children) {
-      Directory *clone = cp_recur(child.second);
-      newbie->children.emplace(clone->name, clone);
+      string child_path = full_path + target->name + "/";
+      Directory *clone = cp_recur(child.second, std::move(child_path));
+      newbie->children.insert({clone->name, clone});
     }
     return newbie;
   }
@@ -232,7 +264,7 @@ private:
   }
 };
 
-static DirectoryController dc{};
+static DirectoryController dc{10};
 
 void init(int n) { dc = DirectoryController{static_cast<size_t>(n)}; }
 
