@@ -20,6 +20,8 @@ using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
+constexpr size_t MAX_N = 50000;
+
 struct Directory {
   string name;
   // name 끼리 비교하기 위한 몸부림
@@ -52,7 +54,8 @@ private:
 
 class DirectoryController {
 public:
-  explicit DirectoryController(size_t size) : cache{size, Directory{}} {
+  explicit DirectoryController() = default;
+  explicit DirectoryController(size_t size) : cache{size * 2, Directory()} {
     root = &cache[cache_top];
     cache_top += 1;
     root->name = "/";
@@ -176,9 +179,12 @@ public:
 private:
   Directory *root;
   size_t cache_top = 0;
-  vector<Directory> cache;
+  vector<Directory> cache{MAX_N, Directory()};
 
   auto new_dir(string &&name) -> Directory * {
+    if (cache_top >= cache.size()) {
+      cache.reserve(cache.size() * 2);
+    }
     Directory &ret = cache[cache_top];
     cache_top++;
     ret.name = std::move(name);
@@ -215,24 +221,24 @@ private:
   }
 };
 
-static DirectoryController *dc = nullptr;
+static DirectoryController dc{};
 
-void init(int n) { dc = new DirectoryController(size_t(n)); }
+void init(int n) { dc = DirectoryController{static_cast<size_t>(n)}; }
 
 void cmd_mkdir(char path[PATH_MAXLEN + 1], char name[NAME_MAXLEN + 1]) {
-  dc->cmd_mkdir(string{path}, string{name});
+  dc.cmd_mkdir(string{path}, string{name});
 }
 
-void cmd_rm(char path[PATH_MAXLEN + 1]) { dc->cmd_rm(string{path}); }
+void cmd_rm(char path[PATH_MAXLEN + 1]) { dc.cmd_rm(string{path}); }
 
 void cmd_cp(char srcPath[PATH_MAXLEN + 1], char dstPath[PATH_MAXLEN + 1]) {
-  dc->cmd_cp(string{srcPath}, string{dstPath});
+  dc.cmd_cp(string{srcPath}, string{dstPath});
 }
 
 void cmd_mv(char srcPath[PATH_MAXLEN + 1], char dstPath[PATH_MAXLEN + 1]) {
-  dc->cmd_mv(string{srcPath}, string{dstPath});
+  dc.cmd_mv(string{srcPath}, string{dstPath});
 }
 
-int cmd_find(char path[PATH_MAXLEN + 1]) { return dc->cmd_find(string{path}); }
+int cmd_find(char path[PATH_MAXLEN + 1]) { return dc.cmd_find(string{path}); }
 
 #endif
