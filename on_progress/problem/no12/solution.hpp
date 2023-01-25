@@ -179,6 +179,8 @@ public:
     // 마침내 cur를 삭제한다.
     parent->children.erase(cur->name);
     m_fullname_cache.erase(path);
+
+    delete cur;
   }
 
   /**
@@ -226,8 +228,8 @@ private:
     return ret;
   }
 
-  /** 실제로 자원을 반납하지는 않을 예정. 먼저 자식들에게 재귀적으로 삭제
-   * 메시지를 보낸 후에 비로소 자신의 자식과 연결을 끊는다. */
+  /** 먼저 자식들에게 재귀적으로 삭제 메시지를 보낸 후에 비로소 자신의 자식과
+   * 연결을 끊는다. */
   auto rm_recur(Directory *dir) -> void {
     for (auto child : dir->children) {
       rm_recur(child.second);
@@ -239,7 +241,8 @@ private:
   auto do_rm(Directory *dir) -> void {
     // fullname_cache를 일괄적으로 삭제함.
     for (auto const &elem : dir->children) {
-      m_fullname_cache.erase(elem.second->full_name);
+      auto itr = m_fullname_cache.find(elem.second->full_name);
+      m_fullname_cache.erase(itr);
     }
     dir->children.clear();
   }
