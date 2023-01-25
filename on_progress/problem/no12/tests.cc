@@ -89,6 +89,8 @@ TEST(MV, 1) {
   ASSERT_EQ(0, dir.cmd_find("/hello2/my/name/is/choi/"));
   ASSERT_EQ(0, dir.cmd_find("/hello2/my/name/is/park/"));
   ASSERT_THROW(dir.cmd_find("/hello/my/"), decltype(dir_not_found{}));
+
+  dir.cmd_mkdir("/hello2/my/name/is/", "kim");
 }
 
 TEST(SOL, 1) {

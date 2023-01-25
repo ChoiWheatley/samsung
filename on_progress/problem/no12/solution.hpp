@@ -86,11 +86,12 @@ inline auto last_token(const string &glob, char delim)
 
 class DirectoryController {
 public:
-  explicit DirectoryController(size_t size) : cache{size * 2, Directory()} {
-    root = &cache[cache_top];
-    cache_top += 1;
+  explicit DirectoryController(size_t size)
+      : m_mem_pool{size * 2, Directory()} {
+    root = &m_mem_pool[m_top];
+    m_top += 1;
     root->name = "/";
-    m_full_path_map.insert({root->name, root});
+    m_cache.insert({root->name, root});
   };
 
   /**
@@ -133,8 +134,8 @@ public:
   }
 
   auto get_full_path(const string &path) -> Directory * {
-    auto itr = m_full_path_map.find(path);
-    if (itr == m_full_path_map.end()) {
+    auto itr = m_cache.find(path);
+    if (itr == m_cache.end()) {
       throw dir_not_found{path.c_str()};
     }
     return itr->second;
@@ -148,7 +149,7 @@ public:
     auto itr = get_full_path(path);
     auto *newbie = new_dir(std::move(name));
     itr->children.insert({newbie->name, newbie});
-    m_full_path_map.insert({full_path, newbie});
+    m_cache.insert({full_path, newbie});
 
     return newbie;
   }
@@ -170,7 +171,7 @@ public:
     rm_recur(cur);
     // 마침내 parent의 자식 중 cur를 삭제한다.
     parent->children.erase(cur->name);
-    m_full_path_map.erase(path);
+    m_cache.erase(path);
   }
 
   /**
@@ -188,28 +189,25 @@ public:
   이동한다.
   */
   auto cmd_mv(const string &src_path, const string &dst_path) {
-    Directory *dst = get(dst_path);
-    Directory *src_parent = nullptr;
-    Directory *src =
-        get(src_path, [&src_parent](Directory *ptr) { src_parent = ptr; });
-    if (dst == nullptr) {
-      throw dir_not_found{dst_path.c_str()};
-    }
-    if (src == nullptr) {
-      throw dir_not_found{src_path.c_str()};
-    }
-    dst->children.emplace(src->name, src);
+    auto last_token_rng = last_token(src_path, '/');
+    string parent_path = src_path.substr(
+        0, std::distance(src_path.cbegin(), last_token_rng.first));
+
+    Directory *dst = get_full_path(dst_path);
+    Directory *src = get_full_path(src_path);
+    Directory *src_parent = get_full_path(parent_path);
+
+    dst->children.insert({src->name, src});
     src_parent->children.erase(src->name);
+
+    // TODO: m_full_path_map erase & insert
   }
 
   /**
   path 디렉터리의 모든 하위 디렉터리 개수를 반환한다.
   */
   auto cmd_find(const string &src_path) -> int {
-    Directory const *src = get(src_path);
-    if (src == nullptr) {
-      throw dir_not_found{src_path.c_str()};
-    }
+    Directory const *src = get_full_path(src_path);
     int count = 0;
     for (auto const &child : src->children) {
       count += count_recur(child.second);
@@ -218,29 +216,26 @@ public:
   }
 
 private:
-  vector<Directory> cache{MAX_N * 2, Directory()};
-  Directory *root = &cache[0];
-  size_t cache_top = 1;
-  map<string, Directory *> m_full_path_map; // "/a/b/c/"
-
   auto new_dir(string &&name) -> Directory * {
-    if (cache_top >= cache.size()) {
+    if (m_top >= m_mem_pool.size()) {
       throw cache_out_of_bounds{};
     }
-    Directory &ret = cache.at(cache_top);
-    cache_top++;
+    Directory &ret = m_mem_pool.at(m_top);
+    m_top++;
     ret.name = std::move(name);
     return &ret;
   }
 
   /** 실제로 자원을 반납하지는 않을 예정. 먼저 자식들에게 재귀적으로 삭제
    * 메시지를 보낸 후에 비로소 자신의 자식과 연결을 끊는다. */
-  static auto rm_recur(Directory *dir) -> void {
+  auto rm_recur(Directory *dir) -> void {
     for (auto child : dir->children) {
       rm_recur(child.second);
     }
     dir->children.clear();
   }
+
+  auto do_rm(Directory *dir) -> void { dir->children.clear(); }
 
   /**
   target과 그 하위 디렉토리들을 모두 복제한 새 디렉토리를 리턴한다.
@@ -262,6 +257,11 @@ private:
     }
     return cnt;
   }
+
+  vector<Directory> m_mem_pool{MAX_N * 2, Directory()};
+  Directory *root = &m_mem_pool[0];
+  size_t m_top = 1;
+  map<string, Directory *> m_cache; // "/a/b/c/"
 };
 
 static DirectoryController dc{10};
