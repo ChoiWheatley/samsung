@@ -26,7 +26,7 @@ TEST(Getline, delim) {
 }
 
 TEST(MKDIR, 1) {
-  DirectoryController dir{MAX_N};
+  DirectoryController dir;
   dir.cmd_mkdir("/", "hello");
   dir.cmd_mkdir("/hello/", "my");
   dir.cmd_mkdir("/hello/my/", "name");
@@ -38,7 +38,7 @@ TEST(MKDIR, 1) {
 }
 
 TEST(RMDIR, 1) {
-  DirectoryController dir{MAX_N};
+  DirectoryController dir;
   dir.cmd_mkdir("/", "hello");
   ASSERT_EQ(1, dir.cmd_find("/"));
   dir.cmd_rm("/hello/");
@@ -60,7 +60,7 @@ TEST(RMDIR, 1) {
 }
 
 TEST(CP, 1) {
-  DirectoryController dir{MAX_N};
+  DirectoryController dir;
   dir.cmd_mkdir("/", "hello");
   dir.cmd_mkdir("/hello/", "my");
   dir.cmd_mkdir("/hello/my/", "name");
@@ -77,7 +77,7 @@ TEST(CP, 1) {
 }
 
 TEST(MV, 1) {
-  DirectoryController dir{MAX_N};
+  DirectoryController dir;
   dir.cmd_mkdir("/", "hello");
   dir.cmd_mkdir("/hello/", "my");
   dir.cmd_mkdir("/hello/my/", "name");
@@ -95,7 +95,7 @@ TEST(MV, 1) {
 }
 
 TEST(SOL, 1) {
-  DirectoryController dir{MAX_N};
+  DirectoryController dir;
   dir.cmd_mkdir("/", "aa");
   dir.cmd_mkdir("/", "bb");
   dir.cmd_mkdir("/aa/", "cc");
@@ -110,7 +110,7 @@ namespace Timeout {
 constexpr size_t MAX = 5000;
 
 TEST(Timeout, 1) {
-  DirectoryController dir{MAX};
+  DirectoryController dir;
   string concater = "/";
   for (size_t i = 0; i < MAX; ++i) {
     dir.cmd_mkdir(concater, std::to_string(i));

@@ -16,11 +16,8 @@
 #define PATH_MAXLEN 1999
 
 using std::map;
-using std::set;
 using std::string;
 using std::stringstream;
-using std::unique_ptr;
-using std::vector;
 
 constexpr size_t MAX_N = 50000;
 
@@ -96,10 +93,7 @@ inline auto last_token(const string &glob, char delim)
 
 class DirectoryController {
 public:
-  explicit DirectoryController(size_t size)
-      : m_mem_pool{size * 2, Directory()} {
-    root = &m_mem_pool[m_top];
-    m_top += 1;
+  explicit DirectoryController() {
     root->name = "/";
     root->full_name = root->name;
     m_fullname_cache.insert({root->name, root});
@@ -206,14 +200,8 @@ public:
     string parent_path = src_path.substr(
         0, std::distance(src_path.cbegin(), last_token_rng.first));
 
-    Directory *dst = get_full_path(dst_path);
-    Directory *src = get_full_path(src_path);
-    Directory *src_parent = get_full_path(parent_path);
-
-    dst->children.insert({src->name, src});
-    src_parent->children.erase(src->name);
-
-    // TODO: m_full_path_map erase & insert
+    cmd_cp(src_path, dst_path);
+    cmd_rm(src_path);
   }
 
   /**
@@ -233,14 +221,9 @@ private:
     if (parent == nullptr) {
       throw err::no_parent{};
     }
-    if (m_top >= m_mem_pool.size()) {
-      throw err::cache_out_of_bounds{};
-    }
-    Directory &ret = m_mem_pool.at(m_top);
-    m_top++;
-    ret.name = std::move(name);
-    ret.full_name = parent->full_name + ret.name + "/";
-    return &ret;
+    auto *ret = new Directory(std::move(name));
+    ret->full_name = parent->full_name + ret->name + "/";
+    return ret;
   }
 
   /** 실제로 자원을 반납하지는 않을 예정. 먼저 자식들에게 재귀적으로 삭제
@@ -268,8 +251,7 @@ private:
     Directory *newbie = cmd_mkdir(full_path, string{target->name});
     for (auto const &child : target->children) {
       string child_path = full_path + target->name + "/";
-      Directory *clone = cp_recur(child.second, std::move(child_path));
-      newbie->children.insert({clone->name, clone});
+      cp_recur(child.second, std::move(child_path));
     }
     return newbie;
   }
@@ -282,15 +264,14 @@ private:
     return cnt;
   }
 
-  vector<Directory> m_mem_pool{MAX_N * 2, Directory()};
-  Directory *root = &m_mem_pool[0];
-  size_t m_top = 1;
-  map<string, Directory *> m_fullname_cache; // "/a/b/c/"
+  Directory *root = new Directory("/");
+  map<string, Directory *, std::less<>> m_fullname_cache; // "/a/b/c/"
 };
 
-static DirectoryController dc{10};
+static DirectoryController dc;
 
-void init(int n) { dc = DirectoryController{static_cast<size_t>(n)}; }
+/** 그냥 동적할당 쌔림 */
+void init(int n) { dc = DirectoryController{}; }
 
 void cmd_mkdir(char path[PATH_MAXLEN + 1], char name[NAME_MAXLEN + 1]) {
   dc.cmd_mkdir(string{path}, string{name});
