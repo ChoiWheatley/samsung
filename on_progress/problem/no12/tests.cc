@@ -8,6 +8,7 @@
 #include <vector>
 
 using std::all_of;
+using namespace err;
 
 TEST(Getline, delim) {
   string path = "/a/b/c/";

@@ -29,8 +29,9 @@ auto compare(Directory *a_ptr, Directory const *b_ptr) -> bool;
 
 struct Directory {
   string name;
+  string full_name;
   // name 끼리 비교하기 위한 몸부림
-  map<string, Directory *> children{};
+  map<string, Directory *, std::less<>> children{};
 
   explicit Directory() = default;
   explicit Directory(std::string name) : name(std::move(name)) {}
@@ -39,10 +40,11 @@ struct Directory {
   auto operator<(const Directory &o) const { return name < o.name; };
 };
 
-auto compare(Directory *a_ptr, Directory const *b_ptr) -> bool {
+inline auto compare(Directory const *a_ptr, Directory const *b_ptr) -> bool {
   return a_ptr->name < b_ptr->name;
 }
 
+namespace err {
 struct dir_not_found : std::exception {
   explicit dir_not_found() = default;
   explicit dir_not_found(const char raw_string[]) : desc(raw_string){};
@@ -60,6 +62,14 @@ private:
 struct cache_out_of_bounds : std::exception {
   const char *what() const noexcept override { return "cache size exceeds!"; }
 };
+
+struct no_parent : std::exception {
+  const char *what() const noexcept override {
+    return "parent is null when new_dir";
+  }
+};
+
+} // namespace err
 
 template <class Consumer>
 auto foreach_token(const string &glob, char delim, Consumer const &consumer) {
@@ -91,7 +101,8 @@ public:
     root = &m_mem_pool[m_top];
     m_top += 1;
     root->name = "/";
-    m_cache.insert({root->name, root});
+    root->full_name = root->name;
+    m_fullname_cache.insert({root->name, root});
   };
 
   /**
@@ -134,9 +145,9 @@ public:
   }
 
   auto get_full_path(const string &path) -> Directory * {
-    auto itr = m_cache.find(path);
-    if (itr == m_cache.end()) {
-      throw dir_not_found{path.c_str()};
+    auto itr = m_fullname_cache.find(path);
+    if (itr == m_fullname_cache.end()) {
+      throw err::dir_not_found{path.c_str()};
     }
     return itr->second;
   }
@@ -146,10 +157,11 @@ public:
   */
   auto cmd_mkdir(const string &path, string &&name) -> Directory * {
     string full_path = path + name + "/";
-    auto itr = get_full_path(path);
-    auto *newbie = new_dir(std::move(name));
-    itr->children.insert({newbie->name, newbie});
-    m_cache.insert({full_path, newbie});
+    Directory *parent = get_full_path(path);
+    Directory *newbie = new_dir(std::move(name), parent);
+
+    parent->children.insert({newbie->name, newbie});
+    m_fullname_cache.insert({full_path, newbie});
 
     return newbie;
   }
@@ -166,12 +178,13 @@ public:
     string parent_path =
         path.substr(0, std::distance(path.cbegin(), last_token_itr.first));
 
+    // cur의 모든 자식들을 삭제한다.
     Directory *cur = get_full_path(path);
     Directory *parent = get_full_path(parent_path);
     rm_recur(cur);
-    // 마침내 parent의 자식 중 cur를 삭제한다.
+    // 마침내 cur를 삭제한다.
     parent->children.erase(cur->name);
-    m_cache.erase(path);
+    m_fullname_cache.erase(path);
   }
 
   /**
@@ -216,13 +229,17 @@ public:
   }
 
 private:
-  auto new_dir(string &&name) -> Directory * {
+  auto new_dir(string &&name, Directory const *parent) -> Directory * {
+    if (parent == nullptr) {
+      throw err::no_parent{};
+    }
     if (m_top >= m_mem_pool.size()) {
-      throw cache_out_of_bounds{};
+      throw err::cache_out_of_bounds{};
     }
     Directory &ret = m_mem_pool.at(m_top);
     m_top++;
     ret.name = std::move(name);
+    ret.full_name = parent->full_name + ret.name + "/";
     return &ret;
   }
 
@@ -232,10 +249,17 @@ private:
     for (auto child : dir->children) {
       rm_recur(child.second);
     }
-    dir->children.clear();
+    do_rm(dir);
   }
 
-  auto do_rm(Directory *dir) -> void { dir->children.clear(); }
+  /** dir의 자식을 제거한다. */
+  auto do_rm(Directory *dir) -> void {
+    // fullname_cache를 일괄적으로 삭제함.
+    for (auto const &elem : dir->children) {
+      m_fullname_cache.erase(elem.second->full_name);
+    }
+    dir->children.clear();
+  }
 
   /**
   target과 그 하위 디렉토리들을 모두 복제한 새 디렉토리를 리턴한다.
@@ -261,7 +285,7 @@ private:
   vector<Directory> m_mem_pool{MAX_N * 2, Directory()};
   Directory *root = &m_mem_pool[0];
   size_t m_top = 1;
-  map<string, Directory *> m_cache; // "/a/b/c/"
+  map<string, Directory *> m_fullname_cache; // "/a/b/c/"
 };
 
 static DirectoryController dc{10};
