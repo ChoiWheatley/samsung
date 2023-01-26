@@ -202,8 +202,10 @@ public:
     string parent_path = src_path.substr(
         0, std::distance(src_path.cbegin(), last_token_rng.first));
 
-    cmd_cp(src_path, dst_path);
-    cmd_rm(src_path);
+    Directory *dst = get_full_path(dst_path);
+    Directory *src = get_full_path(src_path);
+
+    // remove from cache
   }
 
   /**
