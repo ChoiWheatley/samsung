@@ -1,8 +1,9 @@
 #include "solution.hpp"
 #include <gtest/gtest.h>
-#include <vector>
 
 using namespace std;
+
+TEST(test, 1) {}
 
 TEST(Sol, 1) {
   init();
