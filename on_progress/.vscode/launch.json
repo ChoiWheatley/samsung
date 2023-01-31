@@ -5,28 +5,17 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "(lldb) 시작",
+      "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/bin/no19_app.out",
+      "program": "${workspaceFolder}/build/bin/no14_app.out",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
       "environment": [],
       "externalConsole": false,
-      "MIMode": "lldb"
-    },
-    {
-      "name": "(gdb) Launch",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/build/bin/no19_app.out",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/build/bin/",
-      "environment": [],
-      "externalConsole": false,
       "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",
@@ -40,7 +29,19 @@
         }
       ],
       "visualizerFile": "${workspaceFolder}/.vscode/my.natvis",
-      "showDisplayString": true
+      "showDisplayString": true,
+      "launchCompleteCommand": "exec-run",
+      "linux": {
+        "MIMode": "gdb",
+        "miDebuggerPath": "/usr/bin/gdb"
+      },
+      "osx": {
+        "MIMode": "lldb"
+      },
+      "windows": {
+        "MIMode": "gdb",
+        "miDebuggerPath": "C:\\MinGw\\bin\\gdb.exe"
+      }
     }
   ]
 }
