@@ -2,6 +2,7 @@
 #define SOL
 
 #include <cinttypes>
+#include <cstddef>
 
 using data_t = uint32_t;
 using std::size_t;
