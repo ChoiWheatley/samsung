@@ -5,10 +5,22 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "(lldb) 시작",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/bin/no19_app.out",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceRoot}/build/bin/no13_app.out",
+      "program": "${workspaceFolder}/build/bin/no19_app.out",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build/bin/",
