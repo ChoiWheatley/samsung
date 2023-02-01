@@ -8,7 +8,7 @@
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/bin/no14_app.out",
+      "program": "${workspaceFolder}/build/bin/no15_app.out",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
@@ -30,18 +30,7 @@
       ],
       "visualizerFile": "${workspaceFolder}/.vscode/my.natvis",
       "showDisplayString": true,
-      "launchCompleteCommand": "exec-run",
-      "linux": {
-        "MIMode": "gdb",
-        "miDebuggerPath": "/usr/bin/gdb"
-      },
-      "osx": {
-        "MIMode": "lldb"
-      },
-      "windows": {
-        "MIMode": "gdb",
-        "miDebuggerPath": "C:\\MinGw\\bin\\gdb.exe"
-      }
+      "launchCompleteCommand": "exec-run"
     }
   ]
 }
