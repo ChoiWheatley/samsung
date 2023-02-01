@@ -6,6 +6,8 @@
 using namespace std;
 using namespace node;
 
+using namespace sol2;
+
 TEST(Ancester, 1) {
   node_t root{};
   node_t n1{1, &root};

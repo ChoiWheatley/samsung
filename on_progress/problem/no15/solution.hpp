@@ -105,6 +105,8 @@ static auto new_node(node::idx_t id, node::node_t *parent) {
   return ret;
 }
 
+namespace sol1 {
+
 template <class Consumer>
 inline void do_bfs(node::node_t const *root,
                    Consumer const &do_something_with) {
@@ -154,5 +156,65 @@ inline auto solution(vector<node::idx_t> const &data) -> size_t {
   });
   return cnt;
 }
+} // namespace sol1
+namespace sol2 {
+
+// // a와 b가 서로 bfs의 전,후 관계라고 가정. 아니라면 undefined behavior
+// inline auto nearest_common_ancester(node::node_t const &n1,
+//                                     node::node_t const &n2)
+//     -> node::node_t const & {
+//   auto const *p1 = n1.parent;
+//   auto const *p2 = n2.parent;
+
+// }
+
+inline auto solution(vector<node::idx_t> const &data) -> size_t {
+  for (size_t i = 0; i < node::MAX_NODE; ++i) {
+    mem_pool[i].children.clear();
+    mem_pool[i].parent = nullptr;
+    mem_pool[i].depth = 0;
+  }
+  for (node::idx_t i = 0; i < data.size(); ++i) {
+    auto e = data[i];
+    auto parent_idx = e - 1;
+    new_node(i + 1, &mem_pool[parent_idx]);
+  }
+
+  size_t cnt = 0;
+
+  // bfs
+  auto q = std::queue<node::node_t const *>{};
+  auto const *cur = &mem_pool[0];
+  auto const *prev = cur;
+
+  q.push(cur);
+
+  while (!q.empty()) {
+
+    cur = q.front();
+    q.pop();
+    if (cur->parent == nullptr)
+      ;
+    else if (cur->parent == prev) {
+      // 아직 subtree 단위로 이동하는게 아님
+      cnt += 1;
+    } else if (cur->parent == prev->parent) {
+      // 아직 subtree 단위로 이동하는게 아님
+      cnt += 2;
+    } else {
+      // 다른 subtree로 이동
+      cnt += node::dist(*cur, *prev);
+    }
+
+    for (auto const *c : cur->children) {
+      q.push(c);
+    }
+    prev = cur;
+  }
+
+  return cnt;
+}
+
+} // namespace sol2
 
 #endif
