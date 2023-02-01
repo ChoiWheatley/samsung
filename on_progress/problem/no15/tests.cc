@@ -1,5 +1,6 @@
 #include "solution.hpp"
 #include <gtest/gtest.h>
+#include <random.hpp>
 #include <vector>
 
 using namespace std;
@@ -72,4 +73,22 @@ TEST(Sol, 3) {
   auto answer = 25;
   auto submit = solution(data);
   ASSERT_EQ(answer, submit);
+}
+
+TEST(Timeout, 1) {
+  Random<uint32_t> r{};
+  auto data = vector<idx_t>{};
+  for (size_t i = 2; i < node::MAX_NODE; ++i) {
+    data.emplace_back((r.next() % (i - 1)) + 1);
+  }
+  solution(data);
+}
+TEST(Timeout, 2) {
+
+  auto data = vector<idx_t>{1};
+  for (size_t i = 2; i < MAX_NODE; i += 2) {
+    data.emplace_back(i);
+    data.emplace_back(i);
+  }
+  solution(data);
 }
