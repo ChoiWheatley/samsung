@@ -6,7 +6,7 @@
 using namespace std;
 using namespace node;
 
-using namespace sol2;
+using namespace sol3;
 
 TEST(Ancester, 1) {
   node_t root{};
@@ -85,12 +85,39 @@ TEST(Timeout, 1) {
   }
   solution(data);
 }
+/**
+0
+ ├─1
+ └─2
+    ├─3
+    └─4
+       ├─5
+       └─6
+*/
 TEST(Timeout, 2) {
 
   auto data = vector<idx_t>{1};
   for (size_t i = 2; i < MAX_NODE; i += 2) {
     data.emplace_back(i);
     data.emplace_back(i);
+  }
+  solution(data);
+}
+/**
+TEST2인데 두 개를 동시에 가지고 있는 모양
+*/
+TEST(Timeout, 3) {
+
+  constexpr auto HALF_MAX = 43'000;
+  auto data = vector<idx_t>{1};
+  for (size_t i = 2; i < HALF_MAX; i += 2) {
+    data.emplace_back(i);
+    data.emplace_back(i);
+  }
+  data.emplace_back(1);
+  for (size_t i = 1; i < HALF_MAX; i += 2) {
+    data.emplace_back(HALF_MAX + i);
+    data.emplace_back(HALF_MAX + i);
   }
   solution(data);
 }

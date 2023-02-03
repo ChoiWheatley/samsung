@@ -8,7 +8,7 @@ using node::idx_t;
 using std::cin;
 using std::cout;
 using std::vector;
-using namespace sol2;
+using namespace sol3;
 
 int main(void) {
   std::ios_base::sync_with_stdio(false);
