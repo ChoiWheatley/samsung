@@ -45,10 +45,7 @@ static auto normalize_score(int score) -> int {
 array<Soldier, MAX_ID> soldiers;
 array<Team, MAX_TEAM> teams;
 
-void init() {
-  soldiers = {};
-  teams = {};
-}
+void init() {}
 
 void hire(int mID, int mTeam, int mScore) {
   soldiers[mID].mID = mID;
