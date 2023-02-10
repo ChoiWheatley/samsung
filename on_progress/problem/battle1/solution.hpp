@@ -46,8 +46,8 @@ array<Soldier, MAX_ID> soldiers;
 array<Team, MAX_TEAM> teams;
 
 void init() {
-  soldiers = array<Soldier, MAX_ID>();
-  teams = array<Team, MAX_TEAM>();
+  soldiers = {};
+  teams = {};
 }
 
 void hire(int mID, int mTeam, int mScore) {
