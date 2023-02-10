@@ -8,7 +8,7 @@
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/bin/battle1_app.out",
+      "program": "${workspaceFolder}/build/bin/heap_tests.out",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
