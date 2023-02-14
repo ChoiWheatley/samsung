@@ -68,9 +68,9 @@ static void g_set(uint tree[TREE_SIZE], uint node, uint start, uint end,
   }
 
   /**현재 노드에 가해질 변화 수정*/
-  tree[node] = less_than(tree[g_left(idx)], tree[g_right(idx)]) //
-                   ? tree[g_left(idx)]
-                   : tree[g_right(idx)];
+  tree[node] = less_than(tree[g_left(node)], tree[g_right(node)]) //
+                   ? tree[g_left(node)]
+                   : tree[g_right(node)];
 }
 
 struct null_pointer_exception {};
@@ -96,7 +96,7 @@ template <typename T> struct Box {
   명시한 범위 내의 최대값 혹은 최소값을 리턴한다.
 
 유효한 범위는 다음과 같다.
-start <= right && left <= end
+left <= start && end <= right
 */
 template <class Less>
 static Box<cuint> g_query(uint const tree[TREE_SIZE], uint node,       //
@@ -107,7 +107,7 @@ static Box<cuint> g_query(uint const tree[TREE_SIZE], uint node,       //
     return Box<cuint>::empty();
   }
   // 유효한 범위
-  if (left <= start && right <= end) {
+  if (left <= start && end <= right) {
     return Box<cuint>{&tree[node]};
   }
   // 두 노드에 걸쳐있는 경우
@@ -139,16 +139,12 @@ inline void set(uint idx, uint value, uint n) {
   g_set(g_maxtree, 1, 0, n - 1, idx, value, &g_greater);
 }
 
-inline uint max_between(uint start_inclusive, uint end_inclusive, uint n) {
-  return g_query(g_maxtree, 1, 0, n - 1, start_inclusive, end_inclusive,
-                 &g_greater)
-      .get();
+inline uint max_between(uint left_in, uint right_in, uint n) {
+  return g_query(g_maxtree, 1, 0, n - 1, left_in, right_in, &g_greater).get();
 }
 
-inline uint min_between(uint start_inclusive, uint end_inclusive, uint n) {
-  return g_query(g_mintree, 1, 0, n - 1, start_inclusive, end_inclusive,
-                 &g_less)
-      .get();
+inline uint min_between(uint left_in, uint right_in, uint n) {
+  return g_query(g_mintree, 1, 0, n - 1, left_in, right_in, &g_less).get();
 }
 
 #endif
