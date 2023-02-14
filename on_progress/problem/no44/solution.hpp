@@ -139,12 +139,16 @@ inline void set(uint idx, uint value, uint n) {
   g_set(g_maxtree, 1, 0, n - 1, idx, value, &g_greater);
 }
 
-inline uint max_between(uint left_in, uint right_in, uint n) {
-  return g_query(g_maxtree, 1, 0, n - 1, left_in, right_in, &g_greater).get();
+inline uint max_between(uint left_inclusive, uint right_exclusive, uint n) {
+  return g_query(g_maxtree, 1, 0, n - 1, //
+                 left_inclusive, right_exclusive - 1, &g_greater)
+      .get();
 }
 
-inline uint min_between(uint left_in, uint right_in, uint n) {
-  return g_query(g_mintree, 1, 0, n - 1, left_in, right_in, &g_less).get();
+inline uint min_between(uint left_inclusive, uint right_exclusive, uint n) {
+  return g_query(g_mintree, 1, 0, n - 1, //
+                 left_inclusive, right_exclusive - 1, &g_less)
+      .get();
 }
 
 #endif

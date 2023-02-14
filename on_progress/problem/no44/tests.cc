@@ -1,5 +1,9 @@
 #include "solution.hpp"
 #include <gtest/gtest.h>
+#include <utility>
+
+using std::pair;
+using uint_pair = pair<uint, uint>;
 
 TEST(Init, 1) {
   uint const data[N] = {1, 2, 3, 4, 5};
@@ -30,9 +34,30 @@ TEST(Query, 1) {
   uint const data[N] = {1, 2, 3, 4, 5};
   init(data, n);
   for (size_t i = 0; i < n; ++i) {
-    for (size_t j = i; j < n; ++j) {
-      ASSERT_EQ(data[j], max_between(i, j, n));
+    for (size_t j = i + 1; j <= n; ++j) {
+      ASSERT_EQ(data[j - 1], max_between(i, j, n));
       ASSERT_EQ(data[i], min_between(i, j, n));
     }
   }
+}
+
+/**
+1 0 5 => 4
+1 1 4 => 2
+0 2 9
+1 0 5 => 8
+1 1 4 => 7
+*/
+TEST(Sol, 1) {
+  uint n = 5;
+  uint const data[N] = {1, 2, 3, 4, 5};
+  init(data, n);
+  uint_pair range = {0, 5};
+  uint max = max_between(range.first, range.second, n);
+  uint min = min_between(range.first, range.second, n);
+  ASSERT_EQ(4, max - min);
+  range = {1, 4};
+  max = max_between(range.first, range.second, n);
+  min = min_between(range.first, range.second, n);
+  ASSERT_EQ(2, max - min);
 }
