@@ -1,5 +1,7 @@
 #include "solution.hpp"
+#include <array>
 #include <gtest/gtest.h>
+#include <random.hpp>
 #include <utility>
 
 using std::pair;
@@ -60,4 +62,13 @@ TEST(Sol, 1) {
   max = max_between(range.first, range.second, n);
   min = min_between(range.first, range.second, n);
   ASSERT_EQ(2, max - min);
+}
+
+TEST(Exhaust, 1) {
+  Random<uint> rand{};
+  uint data[N] = {0};
+  for (uint i = 0; i < N; ++i) {
+    data[i] = rand.next();
+  }
+  init(data, N);
 }

@@ -4,7 +4,7 @@
 using uint = unsigned int;
 using cuint = const uint;
 /**들어오는 배열의 최대 길이*/
-constexpr uint N = 10'000;
+constexpr uint N = 100'000;
 /**전역적으로 만들어놓을 세그먼트 트리의 최대 높이*/
 constexpr uint TREE_HEIGHT = 17; // ceil( log2(N) )
 /**전역적으로 만들어놓을 세그먼트 트리의 최대 크기*/
