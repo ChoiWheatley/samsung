@@ -61,7 +61,7 @@ static Box<celem_t> _jagged_sum(Arr const &tree, cuint left, cuint right, //
   if (right < start || end < left) { // invalid range
     return Box<celem_t>::empty();
   }
-  if (left <= start && right <= end) { // perfect range
+  if (left <= start && end <= right) { // perfect range
     return Box<celem_t>(tree[node]);
   }
   // 두 노드에 걸쳐있는 경우
@@ -114,6 +114,7 @@ static void _update(Arr &tree, cuint idx, celem_t value, uint node, //
   }
   if (start == end) { // leaf node
     tree[node] = value;
+    return;
   }
   uint mid = (start + end) / 2;
 
@@ -139,8 +140,9 @@ inline void update(cuint idx, celem_t value, cuint n) {
 @breif:
   [left, right-1] 범위의 i에 대하여 a_i를 번갈아가며 더하고 뺀 값을 출력한다.
 */
-inline elem_t jagged_sum(cuint left_inclusive, cuint right_inclusive, cuint n) {
-  return _jagged_sum(_tree, left_inclusive, right_inclusive, 1, 0, n - 1).get();
+inline elem_t jagged_sum(cuint left_inclusive, cuint right_exclusive, cuint n) {
+  return _jagged_sum(_tree, left_inclusive, right_exclusive - 1, 1, 0, n - 1)
+      .get();
 }
 
 #endif
