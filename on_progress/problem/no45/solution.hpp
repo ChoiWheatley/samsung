@@ -10,7 +10,7 @@ jagged_sum(0,4) = 1-2+3-4+5 = 3
 
 using uint = unsigned int;
 using cuint = const uint;
-using elem_t = int;
+using elem_t = long long int;
 using celem_t = const elem_t;
 
 constexpr uint N = 100'000;
@@ -248,6 +248,7 @@ static Node _sum(Arr<Node> const &tree, cuint left, cuint right, uint node,
 
 /**data를 세그먼트 트리로 변환한다.*/
 inline void init(std::array<elem_t, N> const &data, cuint n) {
+  _tree.fill(Node());
   _init(data, _tree, 1, 0, n - 1);
 }
 
