@@ -73,7 +73,10 @@ constexpr int64_t B = 31;              // 라빈카프 알고리즘의 제곱수
 
 template <typename T> constexpr T mod(T x, T m) {
   auto r = x % m;
-  return r < 0 ? r + m : r;
+  if ((r < 0 && m > 0) || (r > 0 && m < 0)) {
+    return r + m;
+  }
+  return r;
 }
 
 constexpr int64_t pow(int64_t base, int64_t exp) {
