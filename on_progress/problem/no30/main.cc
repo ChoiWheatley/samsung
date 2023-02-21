@@ -31,7 +31,7 @@ int main(void) {
       sam << line;
     }
 
-    auto answer = solution(h, w, n, m, dream.str(), sam.str());
+    auto answer = sol1::solution(h, w, n, m, dream.str(), sam.str());
     cout << "#" << tc << " " << answer << "\n";
   }
   return 0;
