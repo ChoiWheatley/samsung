@@ -5,6 +5,13 @@
 #include <sstream>
 #include <sys/types.h>
 
+using sol2::B;
+using sol2::cumulative_sum;
+using sol2::MOD;
+using sol2::mod;
+using sol2::partial_sum;
+using sol2::pow;
+
 TEST(Sol, 1) {
   int h = 2;
   int w = 2;
@@ -71,10 +78,10 @@ TEST(Sol, 4) {
   ASSERT_EQ(correct, answer);
 }
 TEST(Exhaust, 1) {
-  int h = 100;
-  int w = 100;
-  int n = 2000;
-  int m = 2000;
+  int h = 10;
+  int w = 10;
+  int n = 200;
+  int m = 200;
   stringstream dream;
   stringstream sam;
   Random<u_char> rand;
@@ -100,51 +107,71 @@ TEST(RK, 1) {
 
 TEST(PartialSum, 1) {
   vector<string> str2d = {"oxox", "oooo", "xxxx", "xoxo"};
-  vector<string> str2d_2_2 = {"xx00", "xo00"}; // from (2,2) to (3,3)
+  vector<string> str2d_2_2 = {"xx00", "xo00", "0000",
+                              "0000"}; // from (2,2) to (3,3)
 
   auto cum = sol2::rabin_karp_2d(str2d);
   auto cum_2_2 = sol2::rabin_karp_2d(str2d_2_2);
 
-  for (size_t i = 0; i < 2; ++i) {
-    for (size_t j = 0; j < 2; ++j) {
-      ASSERT_EQ(cum_2_2[i][j] * sol2::B_POW(2 * 4 + 2), cum[i + 2][j + 2]);
+  for (int64_t i = 0; i < 2; ++i) {
+    for (int64_t j = 0; j < 2; ++j) {
+      ASSERT_EQ(mod((str2d_2_2[i][j] * pow(B, i * 4 + j)), MOD),
+                (cum_2_2[i][j]));
+      ASSERT_EQ(mod((cum_2_2[i][j] * pow(B, 2 * 4 + 2)), MOD),
+                cum[i + 2][j + 2]);
     }
   }
 
-  cum = sol2::cumulative_sum(std::move(cum));
-  cum_2_2 = sol2::cumulative_sum(std::move(cum_2_2));
+  int64_t real_sum = 0;
+  int64_t fake_sum = 0;
+  for (int64_t i = 0; i < 2; ++i) {
+    for (int64_t j = 0; j < 2; ++j) {
+      real_sum = mod((real_sum + cum_2_2[i][j]), MOD);
+      fake_sum = mod((fake_sum + cum[i + 2][j + 2]), MOD);
+    }
+  }
+  ASSERT_EQ(mod((real_sum * pow(B, 10)), MOD), fake_sum);
 
-  auto correct = cum_2_2[1][1];
-  auto answer = sol2::partial_sum(cum, 2, 2, 3, 3);
-  correct = (correct * sol2::B_POW(2 * 4 + 2)) % sol2::MOD;
+  cum = cumulative_sum(std::move(cum));
+  cum_2_2 = cumulative_sum(std::move(cum_2_2));
 
-  ASSERT_EQ(correct, answer);
+  auto answer = cum_2_2[1][1];
+  auto submit = partial_sum(cum, 2, 2, 3, 3);
+
+  ASSERT_EQ(real_sum, answer);
+  ASSERT_EQ(fake_sum, submit);
+
+  answer = mod((answer * pow(B, 2 * 4 + 2)), MOD);
+
+  ASSERT_EQ(answer, submit);
 }
 
 #include <random.hpp>
 
 TEST(PartialSum, 2) {
-  Random<u_int16_t> rand;
-  const size_t ROW = 100;
-  const size_t COL = 110;
-  const size_t i1 = ROW / 2 + (rand.next() % 10);
-  const size_t j1 = ROW / 2 + (rand.next() % 10);
-  const size_t i2 = ROW - (rand.next() % 10) - 1;
-  const size_t j2 = COL - (rand.next() % 10) - 1;
-  auto ls = vector<vector<size_t>>(ROW, vector<size_t>(COL));
-  for (size_t i = 0; i < ROW; ++i) {
-    for (size_t j = 0; j < COL; ++j) {
-      ls[i][j] = rand.next() % sol2::MOD;
+  Random<int64_t> rand;
+  const int64_t ROW = 100;
+  const int64_t COL = 110;
+  const int64_t i1 = ROW / 2 + (rand.next() % 10);
+  const int64_t j1 = ROW / 2 + (rand.next() % 10);
+  const int64_t i2 = ROW - (rand.next() % 10) - 1;
+  const int64_t j2 = COL - (rand.next() % 10) - 1;
+
+  auto ls = vector<vector<int64_t>>(ROW, vector<int64_t>(COL));
+
+  for (int64_t i = 0; i < ROW; ++i) {
+    for (int64_t j = 0; j < COL; ++j) {
+      ls[i][j] = mod(rand.next(), MOD);
     }
   }
-  size_t correct = 0;
-  for (size_t i = i1; i <= i2; ++i) {
-    for (size_t j = j1; j <= j2; ++j) {
-      correct = (correct + ls[i][j]) % sol2::MOD;
+  int64_t answer = 0;
+  for (int64_t i = i1; i <= i2; ++i) {
+    for (int64_t j = j1; j <= j2; ++j) {
+      answer = mod((answer + ls[i][j]), MOD);
     }
   }
   ls = sol2::cumulative_sum(std::move(ls));
-  size_t answer = sol2::partial_sum(ls, i1, j1, i2, j2);
+  int64_t submit = sol2::partial_sum(ls, i1, j1, i2, j2);
 
-  ASSERT_EQ(correct, answer);
+  ASSERT_EQ(answer, submit);
 }

@@ -68,19 +68,24 @@ count를 증가시킨다.
 */
 namespace sol2 {
 
-constexpr size_t MOD = 100'000'000'003; // prime number
-constexpr size_t B = 2; // 라빈카프 알고리즘의 제곱수
+constexpr int64_t MOD = 1'000'000'007; // prime number
+constexpr int64_t B = 31;              // 라빈카프 알고리즘의 제곱수
 
-constexpr size_t B_POW(size_t times) {
-  size_t b = 1;
-  while (times-- > 0) {
-    b = (b * B) % MOD;
+template <typename T> constexpr T mod(T x, T m) {
+  auto r = x % m;
+  return r < 0 ? r + m : r;
+}
+
+constexpr int64_t pow(int64_t base, int64_t exp) {
+  int64_t ret = 1;
+  for (int64_t i = 0; i < exp; ++i) {
+    ret = mod((ret * base), MOD);
   }
-  return b;
+  return ret;
 }
 
 template <typename T>
-inline T get_or(vector<vector<T>> const &ls2d, size_t row, size_t col,
+inline T get_or(vector<vector<T>> const &ls2d, int64_t row, int64_t col,
                 T orthen = T{}) {
   if (row < 0 || ls2d.size() < row || //
       col < 0 || ls2d[row].size() < col) {
@@ -92,17 +97,15 @@ inline T get_or(vector<vector<T>> const &ls2d, size_t row, size_t col,
 /**
 라빈카프 알고리즘의 결과를 리턴한다.
 */
-inline vector<vector<size_t>> rabin_karp_2d(vector<string> const &str2d) {
+inline vector<vector<int64_t>> rabin_karp_2d(vector<string> const &str2d) {
 
   const auto n = str2d.size();
   const auto m = str2d[0].size();
-  auto ret = vector<vector<size_t>>(n, vector<size_t>(m));
+  auto ret = vector<vector<int64_t>>(n, vector<int64_t>(m));
 
-  size_t b = 1;
-  for (size_t i = 0; i < n; ++i) {
-    for (size_t j = 0; j < m; ++j) {
-      ret[i][j] = (str2d[i][j] * b) % MOD;
-      b = (b * B) % MOD;
+  for (int64_t i = 0; i < n; ++i) {
+    for (int64_t j = 0; j < m; ++j) {
+      ret[i][j] = mod((str2d[i][j] * pow(B, i * m + j)), MOD);
     }
   }
 
@@ -112,16 +115,16 @@ inline vector<vector<size_t>> rabin_karp_2d(vector<string> const &str2d) {
 /**
 인자로 받은 이차원 배열을 누적배열로 변환한다.
 */
-inline vector<vector<size_t>> cumulative_sum(vector<vector<size_t>> &&ls) {
+inline vector<vector<int64_t>> cumulative_sum(vector<vector<int64_t>> &&ls) {
 
   const auto n = ls.size();
   const auto m = ls[0].size();
 
-  for (size_t i = 0; i < n; ++i) {
-    for (size_t j = 0; j < m; ++j) {
-      ls[i][j] = (ls[i][j] + get_or(ls, i, j - 1)) % MOD;
-      ls[i][j] = (ls[i][j] + get_or(ls, i - 1, j)) % MOD;
-      ls[i][j] = (ls[i][j] - get_or(ls, i - 1, j - 1)) % MOD;
+  for (int64_t i = 0; i < n; ++i) {
+    for (int64_t j = 0; j < m; ++j) {
+      ls[i][j] = mod((ls[i][j] + get_or(ls, i, j - 1)), MOD);
+      ls[i][j] = mod((ls[i][j] + get_or(ls, i - 1, j)), MOD);
+      ls[i][j] = mod((ls[i][j] - get_or(ls, i - 1, j - 1)), MOD);
     }
   }
   return std::move(ls);
@@ -130,13 +133,12 @@ inline vector<vector<size_t>> cumulative_sum(vector<vector<size_t>> &&ls) {
 /**
 (i1, j1) 부터 (i2, j2) 까지의 부분합을 계산한다.
 */
-inline size_t partial_sum(vector<vector<size_t>> const &cumulated, //
-                          size_t i1, size_t j1, size_t i2, size_t j2) {
-  size_t ret = 0;
-  ret += cumulated[i2][j2];
-  ret -= get_or(cumulated, i2, j1 - 1);
-  ret -= get_or(cumulated, i1 - 1, j2);
-  ret += get_or(cumulated, i1 - 1, j1 - 1);
+inline int64_t partial_sum(vector<vector<int64_t>> const &cumulated, //
+                           int64_t i1, int64_t j1, int64_t i2, int64_t j2) {
+  int64_t ret = cumulated[i2][j2];
+  ret = mod((ret - get_or(cumulated, i2, j1 - 1)), MOD);
+  ret = mod((ret - get_or(cumulated, i1 - 1, j2)), MOD);
+  ret = mod((ret + get_or(cumulated, i1 - 1, j1 - 1)), MOD);
   return ret;
 }
 
@@ -153,5 +155,4 @@ inline int solution(int h, int w, int n, int m, //
                     string const &dream, string const &sam) {}
 
 } // namespace sol2
-  // namespace sol1
 #endif
