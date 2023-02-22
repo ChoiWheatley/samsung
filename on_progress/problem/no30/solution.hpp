@@ -1,7 +1,13 @@
 #ifndef SOLUTION
 #define SOLUTION
 
+#include <algorithm>
+#include <cassert>
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
+#include <iterator>
+#include <numeric>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -193,4 +199,158 @@ inline int solution(vector<string> const &dream, vector<string> const &sam) {
 }
 
 } // namespace sol2
+
+/**
+Rabin-Karp with Base = 2, MOD = 1 << 64
+ - pow 연산은 비트시프트 만으로 달성이 가능하다.
+ - mod 연산을 할 필요가 없다. uint64의 범위 자체가 버킷사이즈가 된다.
+문제 조건에 의해 'o'과 'x' 두개의 문자만 주어지기 때문에 각각 1과 2로
+사상시켜 문제를 풀 수 있다.
+*/
+namespace sol3 {
+using i64 = int64_t;
+
+constexpr i64 MOD = 1'000'000'007; // prime number
+
+constexpr i64 ascii_map(char code) {
+  switch (code) {
+  case 'o':
+    return 1 << 0;
+  case 'x':
+    return 1 << 1;
+  default:
+    exit(2);
+  }
+}
+template <typename T> constexpr T mod(T x, T m = MOD) {
+  auto r = x % m;
+  if ((r < 0 && m > 0) || (r > 0 && m < 0)) {
+    return r + m;
+  }
+  return r;
+}
+constexpr i64 pow2(size_t exp) {
+  i64 ret = 1;
+  for (size_t i = 0; i < exp; ++i) {
+    ret = mod(ret << 1);
+  }
+  return ret;
+}
+template <typename T>
+constexpr T get_or(vector<vector<T>> const &ls2d, i64 row, i64 col,
+                   T orthen = T{}) {
+  if (row < 0 || ls2d.size() < row || //
+      col < 0 || ls2d[row].size() < col) {
+    return orthen;
+  }
+  return ls2d[row][col];
+}
+
+/**
+@breif:
+ -  라빈-카프 해시를 수행하고, ls를 갱신한다.
+@param:
+ - dim_col: 두 이차원 배열을 해싱으로 비교하기 위하여 같은 차원에 두어야 한다.
+*/
+inline void rabin_karp(vector<vector<i64>> &ls, i64 dim_col) {
+
+  const auto row = ls.size();
+  const auto col = ls[0].size();
+
+  for (size_t i = 0; i < row; ++i) {
+    for (size_t j = 0; j < col; ++j) {
+      auto &cur = ls[i][j];
+      cur = mod(cur * pow2(i * dim_col + j));
+    }
+  }
+}
+
+/**
+@breif:
+ - 인자로 받은 이차원 배열을 누적배열로 변환하여 ls를 갱신한다.
+cumulate(i, j): (0,0)부터 (i,j) 인덱스까지의 원소들을 모두 더한 값
+*/
+inline void cumulative_sum(vector<vector<i64>> &ls) {
+
+  const auto row = ls.size();
+  const auto col = ls[0].size();
+
+  for (size_t i = 0; i < row; ++i) {
+    for (size_t j = 0; j < col; ++j) {
+
+      auto &cur = ls[i][j];
+      cur = mod(cur + get_or(ls, i - 1, j));
+      cur = mod(cur + get_or(ls, i, j - 1));
+      cur = mod(cur - get_or(ls, i - 1, j - 1));
+    }
+  }
+}
+
+/**
+@breif:
+ - (i1, j1) 부터 (i2, j2) 까지의 부분합을 계산한다.
+*/
+inline i64 partial_sum(vector<vector<i64>> const &cumulated, //
+                       i64 i1, i64 j1, i64 i2, i64 j2) {
+
+  i64 result = cumulated[i2][j2];
+  result = mod(result - get_or(cumulated, i1 - 1, j2));
+  result = mod(result - get_or(cumulated, i2, j1 - 1));
+  result = mod(result + get_or(cumulated, i1 - 1, j1 - 1));
+  return result;
+}
+
+inline int solution(vector<string> const &dream, vector<string> const &sam) {
+
+  const auto row_dream = dream.size();
+  const auto col_dream = dream[0].size();
+  const auto row_sam = sam.size();
+  const auto col_sam = sam[0].size();
+  assert(row_dream <= row_sam && col_dream <= col_sam);
+
+  vector<vector<i64>> dream_mapped;
+  vector<vector<i64>> sam_mapped;
+
+  // init part
+  auto init_unary = [](string const &line) {
+    vector<i64> temporary;
+    std::transform(line.cbegin(), line.cend(), //
+                   std::back_inserter(temporary), &ascii_map);
+    return temporary;
+  };
+  std::transform(dream.cbegin(), dream.cend(), //
+                 std::back_inserter(dream_mapped), init_unary);
+  std::transform(sam.cbegin(), sam.cend(), //
+                 std::back_inserter(sam_mapped), init_unary);
+
+  // rabin-karp part
+  auto dimension = col_sam;
+  rabin_karp(dream_mapped, dimension);
+  rabin_karp(sam_mapped, dimension);
+
+  // accumulate part
+  cumulative_sum(dream_mapped);
+  cumulative_sum(sam_mapped);
+
+  // diff part
+  int cnt = 0;
+  auto key = dream_mapped[row_dream - 1][col_dream - 1];
+  for (auto i = 0; i <= row_sam - row_dream; ++i) {
+    for (auto j = 0; j <= col_sam - col_dream; ++j) {
+
+      auto i2 = i + row_dream - 1;
+      auto j2 = j + col_dream - 1;
+      auto fake_key = partial_sum(sam_mapped, i, j, i2, j2);
+      auto real_key = mod(key * pow2(i * dimension + j));
+
+      if (real_key == fake_key) {
+        cnt++;
+      }
+    }
+  }
+  return cnt;
+}
+
+} // namespace sol3
+
 #endif

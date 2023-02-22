@@ -1,6 +1,8 @@
 #include "solution.hpp"
+#include <algorithm>
 #include <cstddef>
 #include <gtest/gtest.h>
+#include <iterator>
 #include <random.hpp>
 #include <sstream>
 #include <sys/types.h>
@@ -65,16 +67,26 @@ TEST(Sol, 4) {
   int w = 2000;
   int n = 2000;
   int m = 2000;
-  stringstream dream;
-  stringstream sam;
+  stringstream dream_str;
+  stringstream sam_str;
 
-  for (int i = 0; i < h * w; ++i) {
-    dream << 'o';
-    sam << 'o';
+  for (int i = 0; i < h; ++i) {
+    dream_str << 'o';
+    sam_str << 'o';
+  }
+
+  vector<string> dream;
+  vector<string> sam;
+
+  for (int i = 0; i < h; ++i) {
+    dream.emplace_back(dream_str.str());
+  }
+  for (int i = 0; i < n; ++i) {
+    sam.emplace_back(sam_str.str());
   }
 
   int correct = 1;
-  int answer = sol1::solution(h, w, n, m, dream.str(), sam.str());
+  int answer = sol2::solution(dream, sam);
   ASSERT_EQ(correct, answer);
 }
 TEST(Exhaust, 1) {
@@ -82,17 +94,58 @@ TEST(Exhaust, 1) {
   int w = 10;
   int n = 200;
   int m = 200;
-  stringstream dream;
-  stringstream sam;
+  vector<string> dream;
+  vector<string> sam;
   Random<u_char> rand;
 
-  for (int i = 0; i < h * w; ++i) {
-    dream << (rand.next() % 2 == 0 ? "o" : "x");
+  for (int i = 0; i < h; ++i) {
+    stringstream dream_str;
+    for (int j = 0; j < w; ++j) {
+      dream_str << (rand.next() % 2 == 0 ? "o" : "x");
+    }
+    dream.emplace_back(dream_str.str());
   }
-  for (int i = 0; i < n * m; ++i) {
-    sam << (rand.next() % 2 == 0 ? "o" : "x");
+
+  for (int i = 0; i < n; ++i) {
+    stringstream sam_str;
+    for (int j = 0; j < m; ++j) {
+      sam_str << (rand.next() % 2 == 0 ? "o" : "x");
+    }
+    sam.emplace_back(sam_str.str());
   }
-  sol1::solution(h, w, n, m, dream.str(), sam.str());
+
+  sol2::solution(dream, sam);
+}
+TEST(Exhaust, 2) {
+  Random<u_char> rand;
+  int h = 300;
+  int w = 300;
+  vector<string> ls;
+
+  for (int i = 0; i < h; ++i) {
+    stringstream str;
+    for (int j = 0; j < w; ++j) {
+      str << (rand.next() & 1 ? "x" : "o");
+    }
+    ls.emplace_back(str.str());
+  }
+  sol2::rabin_karp_2d(ls, w);
+}
+TEST(Exhaust, 3) {
+
+  using namespace sol3;
+
+  Random<u_char> rand;
+  int h = 200;
+  int w = 200;
+  vector<vector<i64>> ls(h, vector<i64>(w));
+
+  for (int i = 0; i < h; ++i) {
+    for (int j = 0; j < w; ++j) {
+      ls[i][j] = (rand.next() & 1);
+    }
+  }
+  sol3::rabin_karp(ls, w);
 }
 
 TEST(RK, 1) {
@@ -197,6 +250,56 @@ TEST(Sol2, 2) {
   vector<string> sam = {"xxxxxxoxxo", "oxxoooxoox", "xooxxxxoox", "xooxxxoxxo",
                         "oxxoxxxxxx", "ooooxxxxxx", "xxxoxxoxxo", "oooxooxoox",
                         "oooxooxoox", "xxxoxxoxxo"};
+
+  int correct = 4;
+  int answer = solution(dream, sam);
+  ASSERT_EQ(correct, answer);
+}
+
+TEST(Transform, 1) {
+  vector<int> before = {1, 2, 3, 4, 5};
+  vector<int> after;
+  std::transform(before.begin(), before.end(), std::back_inserter(after),
+                 [](int e) { return e * e; });
+  ASSERT_EQ(vector<int>({1, 4, 9, 16, 25}), after);
+}
+
+TEST(Sol3, 1) {
+
+  using namespace sol3;
+
+  vector<string> dream = {"oo", "oo"};
+  vector<string> sam = {"ooo", "ooo", "ooo"};
+
+  int answer = 4;
+
+  int submit = solution(dream, sam);
+
+  ASSERT_EQ(answer, submit);
+}
+TEST(Sol3, 2) {
+
+  using namespace sol3;
+
+  vector<string> dream = {"oxxo", "xoox", "xoox", "oxxo"};
+  vector<string> sam = {"xxxxxxoxxo", "oxxoooxoox", "xooxxxxoox", "xooxxxoxxo",
+                        "oxxoxxxxxx", "ooooxxxxxx", "xxxoxxoxxo", "oooxooxoox",
+                        "oooxooxoox", "xxxoxxoxxo"};
+
+  int correct = 4;
+  int answer = solution(dream, sam);
+  ASSERT_EQ(correct, answer);
+}
+TEST(Sol3, 3) {
+
+  using namespace sol3;
+
+  vector<string> dream = {
+      "ooooo", "ooooo", "ooooo", "ooooo", "ooooo",
+  };
+  vector<string> sam = {
+      "oooooo", "oooooo", "oooooo", "oooooo", "oooooo", "oooooo",
+  };
 
   int correct = 4;
   int answer = solution(dream, sam);
