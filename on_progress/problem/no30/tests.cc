@@ -7,13 +7,6 @@
 #include <sstream>
 #include <sys/types.h>
 
-using sol2::B;
-using sol2::cumulative_sum;
-using sol2::MOD;
-using sol2::mod;
-using sol2::partial_sum;
-using sol2::pow;
-
 TEST(Sol, 1) {
   int h = 2;
   int w = 2;
@@ -64,9 +57,9 @@ TEST(Sol, 3) {
 }
 TEST(Sol, 4) {
   int h = 100;
-  int w = 100;
+  [[maybe_unused]] int w = 100;
   int n = 100;
-  int m = 100;
+  [[maybe_unused]] int m = 100;
   stringstream dream_str;
   stringstream sam_str;
 
@@ -136,8 +129,8 @@ TEST(Exhaust, 3) {
   using namespace sol3;
 
   Random<u_char> rand;
-  int h = 200;
-  int w = 200;
+  int h = 2000;
+  int w = 2000;
   vector<vector<i64>> ls(h, vector<i64>(w));
 
   for (int i = 0; i < h; ++i) {
@@ -174,6 +167,107 @@ TEST(Exhaust, 4) {
 
   sol3::solution(dream, sam);
 }
+TEST(Exhaust, CumulativeSum) {
+
+  using namespace sol3;
+
+  Random<char> rand;
+  int h = 2000;
+  int w = 2000;
+  vector<vector<i64>> ls(h, vector<i64>(w));
+
+  for (int i = 0; i < h; ++i) {
+    for (int j = 0; j < w; ++j) {
+      ls[i][j] = rand.next();
+    }
+  }
+  // sol3::rabin_karp(ls, w);
+  sol3::cumulative_sum(ls);
+}
+
+TEST(Exhaust, MapToInt) {
+
+  using namespace sol3;
+
+  int h = 2000;
+  int w = 2000;
+  int n = 2000;
+  int m = 2000;
+  vector<string> dream;
+  vector<string> sam;
+  Random<u_char> rand;
+
+  for (int i = 0; i < h; ++i) {
+    stringstream dream_str;
+    for (int j = 0; j < w; ++j) {
+      dream_str << (rand.next() % 2 == 0 ? "o" : "x");
+    }
+    dream.emplace_back(dream_str.str());
+  }
+
+  for (int i = 0; i < n; ++i) {
+    stringstream sam_str;
+    for (int j = 0; j < m; ++j) {
+      sam_str << (rand.next() % 2 == 0 ? "o" : "x");
+    }
+    sam.emplace_back(sam_str.str());
+  }
+  map_to_int(dream);
+  map_to_int(sam);
+}
+
+TEST(Exhaust, AsciiMap) {
+
+  using namespace sol3;
+  int h = 2000;
+  int w = 2000;
+  Random<char> rand;
+  for (int i = 0; i < h * w; ++i) {
+    ascii_map(rand.next());
+  }
+}
+TEST(Exhaust, PartialSum) {
+
+  using namespace sol3;
+
+  Random<char> rand;
+  int h = 1000;
+  int w = 1000;
+  int n = 2000;
+  int m = 2000;
+  vector<vector<i64>> ls(n, vector<i64>(m));
+
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      ls[i][j] = rand.next();
+    }
+  }
+
+  for (int i = 0; i <= n - h; ++i) {
+    for (int j = 0; j <= m - w; ++j) {
+      partial_sum(ls, i, j, i + h - 1, j + w - 1);
+    }
+  }
+}
+
+TEST(Exhaust, 5) {
+
+  using namespace sol3;
+
+  Random<char> rand;
+  int h = 2000;
+  int w = 2000;
+  vector<vector<i64>> dream(h, vector<i64>(w));
+  vector<vector<i64>> sam(h, vector<i64>(w));
+
+  for (int i = 0; i < h; ++i) {
+    for (int j = 0; j < w; ++j) {
+      dream[i][j] = rand.next() & 1;
+      sam[i][j] = rand.next() & 1;
+    }
+  }
+  solution(dream, sam);
+}
 
 TEST(RK, 1) {
   vector<string> str2d1 = {"oxox", "oooo", "xxxx", "xoxo"};
@@ -186,6 +280,9 @@ TEST(RK, 1) {
 }
 
 TEST(PartialSum, 1) {
+
+  using namespace sol2;
+
   vector<string> str2d = {"oxox", "oooo", "xxxx", "xoxo"};
   vector<string> str2d_2_2 = {"xx00", "xo00", "0000",
                               "0000"}; // from (2,2) to (3,3)
@@ -229,6 +326,9 @@ TEST(PartialSum, 1) {
 #include <random.hpp>
 
 TEST(PartialSum, 2) {
+
+  using namespace sol2;
+
   Random<int64_t> rand;
   const int64_t ROW = 100;
   const int64_t COL = 110;
@@ -347,10 +447,47 @@ TEST(Overflow, 1) {
 
   using namespace sol3;
 
-  u_char integer1byte = (1 << 8) - 1;
-  ASSERT_EQ(0xff, integer1byte);
-  integer1byte += 1;
-  ASSERT_EQ(0x00, integer1byte);
-  integer1byte = 1 << 128;
-  ASSERT_EQ(0x00, integer1byte);
+  unsigned int i = 1 << 31;
+  i = i << 1;
+  ASSERT_EQ(0x00000000, i);
+  i = 1 << 31;
+  i = i * 2;
+  ASSERT_EQ(0x00000000, i);
+}
+TEST(Underflow, 1) {
+
+  unsigned int i = 0;
+  i = i - 1;
+  ASSERT_EQ(0xffffffff, i);
+}
+
+TEST(Integrity, 1) {
+  int h = 50;
+  int w = 50;
+  int n = 100;
+  int m = 100;
+  vector<string> dream;
+  vector<string> sam;
+  Random<u_char> rand;
+
+  for (int i = 0; i < h; ++i) {
+    stringstream dream_str;
+    for (int j = 0; j < w; ++j) {
+      dream_str << (rand.next() % 2 == 0 ? "o" : "x");
+    }
+    dream.emplace_back(dream_str.str());
+  }
+
+  for (int i = 0; i < n; ++i) {
+    stringstream sam_str;
+    for (int j = 0; j < m; ++j) {
+      sam_str << (rand.next() % 2 == 0 ? "o" : "x");
+    }
+    sam.emplace_back(sam_str.str());
+  }
+
+  auto answer = sol2::solution(dream, sam);
+  auto submit = sol3::solution(dream, sam);
+
+  ASSERT_EQ(answer, submit);
 }

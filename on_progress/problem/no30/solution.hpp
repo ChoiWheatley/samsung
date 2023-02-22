@@ -209,6 +209,7 @@ namespace sol3 {
 using i64 = int64_t;
 
 constexpr i64 MOD = 1'000'000'007; // prime number
+// constexpr i64 MOD = 10007; // prime number
 // constexpr i64 MOD = 101; // prime number
 
 constexpr i64 ascii_map(char code) {
@@ -218,7 +219,7 @@ constexpr i64 ascii_map(char code) {
   case 'x':
     return 1 << 1;
   default:
-    return 0;
+    return code;
   }
 }
 template <typename T> constexpr T mod(T x, T m = MOD) {
@@ -228,16 +229,6 @@ template <typename T> constexpr T mod(T x, T m = MOD) {
   }
   return r;
 }
-template <typename T>
-constexpr T get_or(vector<vector<T>> const &ls2d, i64 row, i64 col,
-                   T orthen = T{}) {
-  if (row < 0 || ls2d.size() < row || //
-      col < 0 || ls2d[row].size() < col) {
-    return orthen;
-  }
-  return ls2d[row][col];
-}
-
 /**
 @breif:
  -  라빈-카프 해시를 수행하고, ls를 갱신한다.
@@ -273,13 +264,13 @@ inline void cumulative_sum(vector<vector<i64>> &ls) {
   const auto row = ls.size();
   const auto col = ls[0].size();
 
-  for (size_t i = 0; i < row; ++i) {
-    for (size_t j = 0; j < col; ++j) {
+  for (int i = 0; i < row; ++i) {
+    for (int j = 0; j < col; ++j) {
 
       auto &cur = ls[i][j];
-      cur = mod(cur + get_or(ls, i - 1, j));
-      cur = mod(cur + get_or(ls, i, j - 1));
-      cur = mod(cur - get_or(ls, i - 1, j - 1));
+      cur += (i - 1 < 0) ? 0 : ls[i - 1][j];
+      cur += (j - 1 < 0) ? 0 : ls[i][j - 1];
+      cur -= (i - 1 < 0 || j - 1 < 0) ? 0 : ls[i - 1][j - 1];
     }
   }
 }
@@ -292,9 +283,15 @@ inline i64 partial_sum(vector<vector<i64>> const &cumulated, //
                        i64 i1, i64 j1, i64 i2, i64 j2) {
 
   i64 result = cumulated[i2][j2];
-  result = mod(result - get_or(cumulated, i1 - 1, j2));
-  result = mod(result - get_or(cumulated, i2, j1 - 1));
-  result = mod(result + get_or(cumulated, i1 - 1, j1 - 1));
+  if (i1 - 1 >= 0) {
+    result = mod(result - (cumulated[i1 - 1][j2]));
+  }
+  if (j1 - 1 >= 0) {
+    result = mod(result - (cumulated[i2][j1 - 1]));
+  }
+  if (i1 - 1 >= 0 && j1 - 1 >= 0) {
+    result = mod(result + (cumulated[i1 - 1][j1 - 1]));
+  }
   return result;
 }
 
@@ -312,37 +309,33 @@ inline vector<vector<i64>> map_to_int(vector<string> const &lines) {
   return ret;
 }
 
-inline int solution(vector<string> const &dream, vector<string> const &sam) {
+inline int solution(vector<vector<i64>> &dream, vector<vector<i64>> &sam) {
 
   const auto row_dream = dream.size();
   const auto col_dream = dream[0].size();
   const auto row_sam = sam.size();
   const auto col_sam = sam[0].size();
 
-  // init part
-  vector<vector<i64>> dream_mapped = map_to_int(dream);
-  vector<vector<i64>> sam_mapped = map_to_int(sam);
-
   // rabin-karp part
   auto dimension = col_sam;
-  rabin_karp(dream_mapped, dimension);
-  rabin_karp(sam_mapped, dimension);
+  rabin_karp(dream, dimension);
+  rabin_karp(sam, dimension);
 
   // accumulate part
-  cumulative_sum(dream_mapped);
-  cumulative_sum(sam_mapped);
+  cumulative_sum(dream);
+  cumulative_sum(sam);
 
   // diff part
   int cnt = 0;
   i64 b = 1;
-  auto key = dream_mapped[row_dream - 1][col_dream - 1];
+  auto key = dream[row_dream - 1][col_dream - 1];
   for (auto i = 0; i <= row_sam - row_dream; ++i) {
 
     for (auto j = 0; j <= col_sam - col_dream; ++j) {
 
       auto i2 = i + row_dream - 1;
       auto j2 = j + col_dream - 1;
-      auto fake_key = partial_sum(sam_mapped, i, j, i2, j2);
+      auto fake_key = partial_sum(sam, i, j, i2, j2);
       auto real_key = mod(key * b);
       b = mod(b << 1);
 
@@ -357,6 +350,14 @@ inline int solution(vector<string> const &dream, vector<string> const &sam) {
     }
   }
   return cnt;
+}
+inline int solution(vector<string> const &dream, vector<string> const &sam) {
+
+  // init part
+  vector<vector<i64>> dream_mapped = map_to_int(dream);
+  vector<vector<i64>> sam_mapped = map_to_int(sam);
+
+  return solution(dream_mapped, sam_mapped);
 }
 
 } // namespace sol3

@@ -19,17 +19,21 @@ int main(void) {
     int n;
     int m;
     cin >> h >> w >> n >> m;
-    vector<string> dream;
-    vector<string> sam;
+    vector<vector<i64>> dream(h, vector<i64>(w));
+    vector<vector<i64>> sam(n, vector<i64>(m));
     for (int i = 0; i < h; ++i) {
       string line;
       cin >> line;
-      dream.push_back(line);
+      for (int j = 0; j < w; ++j) {
+        dream[i][j] = line[j];
+      }
     }
     for (int i = 0; i < n; ++i) {
       string line;
       cin >> line;
-      sam.push_back(line);
+      for (int j = 0; j < m; ++j) {
+        sam[i][j] = line[j];
+      }
     }
 
     auto answer = solution(dream, sam);
