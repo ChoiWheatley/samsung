@@ -5,6 +5,7 @@
 using std::cin;
 using std::cout;
 using std::ios;
+using namespace sol3;
 
 int main(void) {
   ios::sync_with_stdio(false);
@@ -31,7 +32,7 @@ int main(void) {
       sam.push_back(line);
     }
 
-    auto answer = sol2::solution(dream, sam);
+    auto answer = solution(dream, sam);
     cout << "#" << tc << " " << answer << "\n";
   }
   return 0;

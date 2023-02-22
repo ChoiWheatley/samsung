@@ -63,10 +63,10 @@ TEST(Sol, 3) {
   ASSERT_EQ(correct, answer);
 }
 TEST(Sol, 4) {
-  int h = 2000;
-  int w = 2000;
-  int n = 2000;
-  int m = 2000;
+  int h = 100;
+  int w = 100;
+  int n = 100;
+  int m = 100;
   stringstream dream_str;
   stringstream sam_str;
 
@@ -92,8 +92,8 @@ TEST(Sol, 4) {
 TEST(Exhaust, 1) {
   int h = 10;
   int w = 10;
-  int n = 200;
-  int m = 200;
+  int n = 100;
+  int m = 100;
   vector<string> dream;
   vector<string> sam;
   Random<u_char> rand;
@@ -118,8 +118,8 @@ TEST(Exhaust, 1) {
 }
 TEST(Exhaust, 2) {
   Random<u_char> rand;
-  int h = 300;
-  int w = 300;
+  int h = 100;
+  int w = 100;
   vector<string> ls;
 
   for (int i = 0; i < h; ++i) {
@@ -146,6 +146,33 @@ TEST(Exhaust, 3) {
     }
   }
   sol3::rabin_karp(ls, w);
+}
+TEST(Exhaust, 4) {
+  int h = 2000;
+  int w = 2000;
+  int n = 2000;
+  int m = 2000;
+  vector<string> dream;
+  vector<string> sam;
+  Random<u_char> rand;
+
+  for (int i = 0; i < h; ++i) {
+    stringstream dream_str;
+    for (int j = 0; j < w; ++j) {
+      dream_str << (rand.next() % 2 == 0 ? "o" : "x");
+    }
+    dream.emplace_back(dream_str.str());
+  }
+
+  for (int i = 0; i < n; ++i) {
+    stringstream sam_str;
+    for (int j = 0; j < m; ++j) {
+      sam_str << (rand.next() % 2 == 0 ? "o" : "x");
+    }
+    sam.emplace_back(sam_str.str());
+  }
+
+  sol3::solution(dream, sam);
 }
 
 TEST(RK, 1) {

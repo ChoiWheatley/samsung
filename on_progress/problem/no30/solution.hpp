@@ -1,12 +1,10 @@
 #ifndef SOLUTION
 #define SOLUTION
 
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <iterator>
 #include <numeric>
 #include <sstream>
 #include <string>
@@ -210,8 +208,8 @@ Rabin-Karp with Base = 2, MOD = 1 << 64
 namespace sol3 {
 using i64 = int64_t;
 
-// constexpr i64 MOD = 1'000'000'007; // prime number
-constexpr i64 MOD = 101; // prime number
+constexpr i64 MOD = 1'000'000'007; // prime number
+// constexpr i64 MOD = 101; // prime number
 
 constexpr i64 ascii_map(char code) {
   switch (code) {
@@ -220,7 +218,7 @@ constexpr i64 ascii_map(char code) {
   case 'x':
     return 1 << 1;
   default:
-    exit(2);
+    return 0;
   }
 }
 template <typename T> constexpr T mod(T x, T m = MOD) {
@@ -300,28 +298,30 @@ inline i64 partial_sum(vector<vector<i64>> const &cumulated, //
   return result;
 }
 
+inline vector<vector<i64>> map_to_int(vector<string> const &lines) {
+
+  const auto row = lines.size();
+  const auto col = lines[0].size();
+
+  vector<vector<i64>> ret(row, vector<i64>(col));
+  for (int i = 0; i < row; ++i) {
+    for (int j = 0; j < col; ++j) {
+      ret[i][j] = ascii_map(lines[i][j]);
+    }
+  }
+  return ret;
+}
+
 inline int solution(vector<string> const &dream, vector<string> const &sam) {
 
   const auto row_dream = dream.size();
   const auto col_dream = dream[0].size();
   const auto row_sam = sam.size();
   const auto col_sam = sam[0].size();
-  assert(row_dream <= row_sam && col_dream <= col_sam);
-
-  vector<vector<i64>> dream_mapped;
-  vector<vector<i64>> sam_mapped;
 
   // init part
-  auto init_unary = [](string const &line) {
-    vector<i64> temporary;
-    std::transform(line.cbegin(), line.cend(), //
-                   std::back_inserter(temporary), &ascii_map);
-    return temporary;
-  };
-  std::transform(dream.cbegin(), dream.cend(), //
-                 std::back_inserter(dream_mapped), init_unary);
-  std::transform(sam.cbegin(), sam.cend(), //
-                 std::back_inserter(sam_mapped), init_unary);
+  vector<vector<i64>> dream_mapped = map_to_int(dream);
+  vector<vector<i64>> sam_mapped = map_to_int(sam);
 
   // rabin-karp part
   auto dimension = col_sam;
