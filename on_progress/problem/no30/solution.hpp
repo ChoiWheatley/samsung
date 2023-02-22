@@ -210,7 +210,8 @@ Rabin-Karp with Base = 2, MOD = 1 << 64
 namespace sol3 {
 using i64 = int64_t;
 
-constexpr i64 MOD = 1'000'000'007; // prime number
+// constexpr i64 MOD = 1'000'000'007; // prime number
+constexpr i64 MOD = 101; // prime number
 
 constexpr i64 ascii_map(char code) {
   switch (code) {
@@ -228,13 +229,6 @@ template <typename T> constexpr T mod(T x, T m = MOD) {
     return r + m;
   }
   return r;
-}
-constexpr i64 pow2(size_t exp) {
-  i64 ret = 1;
-  for (size_t i = 0; i < exp; ++i) {
-    ret = mod(ret << 1);
-  }
-  return ret;
 }
 template <typename T>
 constexpr T get_or(vector<vector<T>> const &ls2d, i64 row, i64 col,
@@ -257,10 +251,16 @@ inline void rabin_karp(vector<vector<i64>> &ls, i64 dim_col) {
   const auto row = ls.size();
   const auto col = ls[0].size();
 
+  i64 b = 1;
   for (size_t i = 0; i < row; ++i) {
     for (size_t j = 0; j < col; ++j) {
       auto &cur = ls[i][j];
-      cur = mod(cur * pow2(i * dim_col + j));
+      cur = mod(cur * b);
+      b = mod(b << 1);
+    }
+    // b^small_col -> b^big_col
+    for (size_t cnt = 0; cnt < dim_col - col; ++cnt) {
+      b = mod(b << 1);
     }
   }
 }
@@ -334,18 +334,26 @@ inline int solution(vector<string> const &dream, vector<string> const &sam) {
 
   // diff part
   int cnt = 0;
+  i64 b = 1;
   auto key = dream_mapped[row_dream - 1][col_dream - 1];
   for (auto i = 0; i <= row_sam - row_dream; ++i) {
+
     for (auto j = 0; j <= col_sam - col_dream; ++j) {
 
       auto i2 = i + row_dream - 1;
       auto j2 = j + col_dream - 1;
       auto fake_key = partial_sum(sam_mapped, i, j, i2, j2);
-      auto real_key = mod(key * pow2(i * dimension + j));
+      auto real_key = mod(key * b);
+      b = mod(b << 1);
 
       if (real_key == fake_key) {
         cnt++;
       }
+    }
+
+    // b가 다음행의 승수를 가리키기 위한 추가조치
+    for (size_t rem = 0; rem < col_dream - 1; ++rem) {
+      b = mod(b << 1);
     }
   }
   return cnt;

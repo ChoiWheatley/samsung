@@ -294,14 +294,36 @@ TEST(Sol3, 3) {
 
   using namespace sol3;
 
-  vector<string> dream = {
-      "ooooo", "ooooo", "ooooo", "ooooo", "ooooo",
-  };
-  vector<string> sam = {
-      "oooooo", "oooooo", "oooooo", "oooooo", "oooooo", "oooooo",
-  };
+  const size_t h = 4;
+  const size_t w = 4;
+  const size_t n = 5;
+  const size_t m = 5;
 
-  int correct = 4;
+  vector<string> dream;
+  vector<string> sam;
+
+  auto str_small = string(w, 'o');
+  auto str_big = string(m, 'o');
+  for (size_t i = 0; i < h; ++i) {
+    dream.push_back(str_small);
+  }
+  for (size_t i = 0; i < n; ++i) {
+    sam.push_back(str_big);
+  }
+
+  int correct = (n - w + 1) * (m - h + 1);
   int answer = solution(dream, sam);
   ASSERT_EQ(correct, answer);
+}
+
+TEST(Overflow, 1) {
+
+  using namespace sol3;
+
+  u_char integer1byte = (1 << 8) - 1;
+  ASSERT_EQ(0xff, integer1byte);
+  integer1byte += 1;
+  ASSERT_EQ(0x00, integer1byte);
+  integer1byte = 1 << 128;
+  ASSERT_EQ(0x00, integer1byte);
 }
