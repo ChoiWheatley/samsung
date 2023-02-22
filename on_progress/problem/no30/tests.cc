@@ -99,8 +99,8 @@ TEST(RK, 1) {
   vector<string> str2d1 = {"oxox", "oooo", "xxxx", "xoxo"};
   vector<string> str2d2 = {"oxox", "oooo", "xxxx", "xoxx"};
 
-  auto cum1 = sol2::rabin_karp_2d(str2d1);
-  auto cum2 = sol2::rabin_karp_2d(str2d2);
+  auto cum1 = sol2::rabin_karp_2d(str2d1, 4);
+  auto cum2 = sol2::rabin_karp_2d(str2d2, 4);
 
   ASSERT_NE(cum1, cum2);
 }
@@ -110,8 +110,8 @@ TEST(PartialSum, 1) {
   vector<string> str2d_2_2 = {"xx00", "xo00", "0000",
                               "0000"}; // from (2,2) to (3,3)
 
-  auto cum = sol2::rabin_karp_2d(str2d);
-  auto cum_2_2 = sol2::rabin_karp_2d(str2d_2_2);
+  auto cum = sol2::rabin_karp_2d(str2d, 4);
+  auto cum_2_2 = sol2::rabin_karp_2d(str2d_2_2, 4);
 
   for (int64_t i = 0; i < 2; ++i) {
     for (int64_t j = 0; j < 2; ++j) {
@@ -174,4 +174,31 @@ TEST(PartialSum, 2) {
   int64_t submit = sol2::partial_sum(ls, i1, j1, i2, j2);
 
   ASSERT_EQ(answer, submit);
+}
+
+TEST(Sol2, 1) {
+
+  using namespace sol2;
+
+  vector<string> dream = {"oo", "oo"};
+  vector<string> sam = {"ooo", "ooo", "ooo"};
+
+  int answer = 4;
+
+  int submit = solution(dream, sam);
+
+  ASSERT_EQ(answer, submit);
+}
+TEST(Sol2, 2) {
+
+  using namespace sol2;
+
+  vector<string> dream = {"oxxo", "xoox", "xoox", "oxxo"};
+  vector<string> sam = {"xxxxxxoxxo", "oxxoooxoox", "xooxxxxoox", "xooxxxoxxo",
+                        "oxxoxxxxxx", "ooooxxxxxx", "xxxoxxoxxo", "oooxooxoox",
+                        "oooxooxoox", "xxxoxxoxxo"};
+
+  int correct = 4;
+  int answer = solution(dream, sam);
+  ASSERT_EQ(correct, answer);
 }

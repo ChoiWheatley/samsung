@@ -69,7 +69,7 @@ count를 증가시킨다.
 namespace sol2 {
 
 constexpr int64_t MOD = 1'000'000'007; // prime number
-constexpr int64_t B = 31;              // 라빈카프 알고리즘의 제곱수
+constexpr int64_t B = 2;               // 라빈카프 알고리즘의 제곱수
 
 template <typename T> constexpr T mod(T x, T m) {
   auto r = x % m;
@@ -98,9 +98,13 @@ inline T get_or(vector<vector<T>> const &ls2d, int64_t row, int64_t col,
 }
 
 /**
-라빈카프 알고리즘의 결과를 리턴한다.
+@breif: 라빈카프 알고리즘의 결과를 리턴한다.
+@param:
+ - dim_col: 해시값을 만드는 데 동일한 디멘션을 가져야 동일한 구간에서
+동등한 비교를 수행할 수 있다.
 */
-inline vector<vector<int64_t>> rabin_karp_2d(vector<string> const &str2d) {
+inline vector<vector<int64_t>> rabin_karp_2d(vector<string> const &str2d,
+                                             int64_t dim_col) {
 
   const auto n = str2d.size();
   const auto m = str2d[0].size();
@@ -108,7 +112,7 @@ inline vector<vector<int64_t>> rabin_karp_2d(vector<string> const &str2d) {
 
   for (int64_t i = 0; i < n; ++i) {
     for (int64_t j = 0; j < m; ++j) {
-      ret[i][j] = mod((str2d[i][j] * pow(B, i * m + j)), MOD);
+      ret[i][j] = mod((str2d[i][j] * pow(B, i * dim_col + j)), MOD);
     }
   }
 
@@ -148,14 +152,45 @@ inline int64_t partial_sum(vector<vector<int64_t>> const &cumulated, //
 /**
 @breif: 일렬로 만든 두 이차원 문자열 dream, sam으로부터 dream이 sam에 몇 번
 나타나는지 알아내시오.
-@param:
  - h: height of dream
  - w: width of dream
  - n: height of sam
  - m: width of sam
 */
-inline int solution(int h, int w, int n, int m, //
-                    string const &dream, string const &sam) {}
+inline int solution(vector<string> const &dream, vector<string> const &sam) {
+  const auto h = dream.size();
+  const auto w = dream[0].size();
+  const auto n = sam.size();
+  const auto m = sam[0].size();
+
+  auto key1 = rabin_karp_2d(dream, m);
+  auto key2 = rabin_karp_2d(sam, m);
+
+  key1 = cumulative_sum(std::move(key1));
+  key2 = cumulative_sum(std::move(key2));
+
+  auto real_sum = key1[h - 1][w - 1];
+
+  /**
+  real_sum * pow(B, i*m+j) == fake_sum => cnt++
+  */
+  int cnt = 0;
+  for (int i = 0; i <= n - h; ++i) {
+    for (int j = 0; j <= m - w; ++j) {
+
+      auto i2 = i + h - 1;
+      auto j2 = j + w - 1;
+
+      auto fake_sum = partial_sum(key2, i, j, i2, j2);
+      auto lhs = mod(real_sum * pow(B, i * m + j), MOD);
+
+      if (lhs == fake_sum) {
+        cnt += 1;
+      }
+    }
+  }
+  return cnt;
+}
 
 } // namespace sol2
 #endif

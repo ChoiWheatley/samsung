@@ -18,20 +18,20 @@ int main(void) {
     int n;
     int m;
     cin >> h >> w >> n >> m;
-    stringstream dream;
-    stringstream sam;
+    vector<string> dream;
+    vector<string> sam;
     for (int i = 0; i < h; ++i) {
       string line;
       cin >> line;
-      dream << line;
+      dream.push_back(line);
     }
     for (int i = 0; i < n; ++i) {
       string line;
       cin >> line;
-      sam << line;
+      sam.push_back(line);
     }
 
-    auto answer = sol1::solution(h, w, n, m, dream.str(), sam.str());
+    auto answer = sol2::solution(dream, sam);
     cout << "#" << tc << " " << answer << "\n";
   }
   return 0;
