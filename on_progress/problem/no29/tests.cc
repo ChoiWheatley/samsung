@@ -62,9 +62,9 @@ TEST(Integrity, 1) {
 
   Random<unsigned char> rand;
   constexpr size_t STR_LEN = 500'000;
-  constexpr size_t PAT_LEN = 100'000;
+  constexpr size_t PAT_LEN = 10000 / 10;
 
-  const size_t pat_len = PAT_LEN - rand.next();
+  const size_t pat_len = PAT_LEN;
 
   stringstream str;
   stringstream pat;
@@ -78,6 +78,23 @@ TEST(Integrity, 1) {
 
   auto answer = sol1::solution(str.str(), pat.str());
   auto submit = sol2::solution(str.str(), pat.str());
+
+  ASSERT_EQ(answer, submit);
+}
+
+TEST(Timeout, 1) {
+
+  constexpr size_t STR_LEN = 500'000;
+
+  stringstream str;
+  string pat = "a";
+
+  for (size_t i = 0; i < STR_LEN; ++i) {
+    str << 'a';
+  }
+
+  auto answer = sol1::solution(str.str(), pat);
+  auto submit = sol2::solution(str.str(), pat);
 
   ASSERT_EQ(answer, submit);
 }

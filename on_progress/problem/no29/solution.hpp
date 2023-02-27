@@ -79,7 +79,7 @@ namespace sol2 {
 using i64 = int64_t;
 
 constexpr i64 MOD = 1000000007;
-constexpr i64 BASE = 31;
+constexpr i64 BASE = 2;
 constexpr i64 _mod(i64 value) {
   auto rem = value % MOD;
   if ((rem < 0 && MOD > 0) || (rem > 0 && MOD < 0)) {
@@ -87,6 +87,15 @@ constexpr i64 _mod(i64 value) {
   }
   return rem;
 }
+
+class HashBy {
+public:
+  explicit HashBy(i64 base) : _base(base) {}
+  i64 get_base() const { return _base; }
+
+private:
+  i64 _base;
+};
 
 inline i64 solution(string const &str, string const &pat) {
 
@@ -112,7 +121,16 @@ inline i64 solution(string const &str, string const &pat) {
   for (size_t i = 0; i <= str.size() - pat.size(); ++i) {
     auto key_shifted = _mod(key * l_base);
     if (key_shifted == fingerprint) {
-      cnt++;
+      // Hash Collision이 실제로 발생하나보다
+      bool flag = true;
+      for (size_t j = i; j < pat.size(); ++j) {
+        if (pat[j - i] != str[j]) {
+          flag = false;
+        }
+      }
+      if (flag) {
+        cnt++;
+      }
     }
     fingerprint = _mod(fingerprint - (str[i] * l_base));
     fingerprint = _mod(fingerprint + (str[i + pat.size()] * r_base));
