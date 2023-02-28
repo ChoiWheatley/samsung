@@ -10,7 +10,8 @@
 #ifndef SOLUTION
 #define SOLUTION
 #include <algorithm>
-#include <bits/stdc++.h>
+#include <array>
+#include <string>
 
 using std::array;
 using std::string;

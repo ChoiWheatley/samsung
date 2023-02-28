@@ -6,8 +6,9 @@ N개의 물건(부피와 가치를 갖는다.)과 K만큼의 부피를 넣을 �
 
 #ifndef SOLUTION
 #define SOLUTION
-#include <bits/stdc++.h>
+#include <array>
 #include <sys/select.h>
+#include <vector>
 
 using namespace std;
 constexpr size_t MAX_ITEM = 100;

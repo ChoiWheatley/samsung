@@ -292,10 +292,10 @@ TEST(PartialSum, 1) {
 
   for (int64_t i = 0; i < 2; ++i) {
     for (int64_t j = 0; j < 2; ++j) {
-      ASSERT_EQ(mod((str2d_2_2[i][j] * pow(B, i * 4 + j)), MOD),
+      ASSERT_EQ(mod((str2d_2_2[i][j] * sol2::pow(B, i * 4 + j)), MOD),
                 (cum_2_2[i][j]));
-      ASSERT_EQ(mod((cum_2_2[i][j] * pow(B, 2 * 4 + 2)), MOD),
-                cum[i + 2][j + 2]);
+      ASSERT_EQ(mod((cum_2_2[i][j] * sol2::pow(B, 2 * 4 + 2)), MOD),
+                (cum[i + 2][j + 2]));
     }
   }
 
@@ -307,7 +307,7 @@ TEST(PartialSum, 1) {
       fake_sum = mod((fake_sum + cum[i + 2][j + 2]), MOD);
     }
   }
-  ASSERT_EQ(mod((real_sum * pow(B, 10)), MOD), fake_sum);
+  ASSERT_EQ(mod((real_sum * sol2::pow(B, 10)), MOD), fake_sum);
 
   cum = cumulative_sum(std::move(cum));
   cum_2_2 = cumulative_sum(std::move(cum_2_2));
@@ -318,7 +318,7 @@ TEST(PartialSum, 1) {
   ASSERT_EQ(real_sum, answer);
   ASSERT_EQ(fake_sum, submit);
 
-  answer = mod((answer * pow(B, 2 * 4 + 2)), MOD);
+  answer = mod((answer * sol2::pow(B, 2 * 4 + 2)), MOD);
 
   ASSERT_EQ(answer, submit);
 }
