@@ -19,7 +19,6 @@ static array<array<int, MAX_VOLUME + 1>, MAX_ITEM + 1> memo;
 
 inline auto solution(vector<int> const &volume, vector<int> const &cost,
                      int capacity) {
-  assert(volume.size() == cost.size());
   auto const N = volume.size();
   // init
   for (size_t i = 0; i <= MAX_ITEM; ++i) {
