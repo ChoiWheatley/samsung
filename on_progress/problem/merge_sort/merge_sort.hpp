@@ -40,12 +40,12 @@ void merge(Iter begin, Iter end, Less const &less) {
 
 template <typename Iter, class Less>
 void merge_sort(Iter begin, Iter end, Less const &less) {
-  if (begin == end) {
+  if (end - begin <= 1) {
     return;
   }
   auto mid = begin + (end - begin) / 2;
   merge_sort(begin, mid, less);
-  merge_sort(mid + 1, end, less);
+  merge_sort(mid, end, less);
   merge(begin, end, less);
 }
 

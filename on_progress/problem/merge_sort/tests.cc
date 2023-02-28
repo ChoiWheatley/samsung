@@ -17,14 +17,46 @@ TEST(Sort, 1) {
 
   ASSERT_EQ(sorted, ls);
 }
-TEST(Sort, Timeout) {
-  constexpr size_t MAX_N = 90000;
-  using elem_t = char;
+
+constexpr size_t MAX_N = 100000;
+
+TEST(Integrity, 1) {
+  using elem_t = long long;
 
   Random<elem_t> rand;
-  auto ls = vector<elem_t>(MAX_N);
-  for (auto &e : ls) {
-    e = rand.next();
-  }
-  merge_sort(ls.begin(), ls.end(), std::less<elem_t>());
+  vector<elem_t> ls1;
+  vector<elem_t> ls2;
+
+  std::generate_n(std::back_inserter(ls1), MAX_N,
+                  [&rand]() { return rand.next(); });
+  std::copy(ls1.begin(), ls1.end(), std::back_inserter(ls2));
+
+  merge_sort(ls1.begin(), ls1.end(), std::less<elem_t>());
+  std::sort(ls2.begin(), ls2.end());
+
+  ASSERT_EQ(ls2, ls1);
+}
+
+TEST(Timeout, Std) {
+  using elem_t = long long;
+
+  Random<elem_t> rand;
+  vector<elem_t> ls1;
+
+  std::generate_n(std::back_inserter(ls1), MAX_N,
+                  [&rand]() { return rand.next(); });
+
+  std::sort(ls1.begin(), ls1.end());
+}
+
+TEST(Timeout, My) {
+  using elem_t = long long;
+
+  Random<elem_t> rand;
+  vector<elem_t> ls1;
+
+  std::generate_n(std::back_inserter(ls1), MAX_N,
+                  [&rand]() { return rand.next(); });
+
+  merge_sort(ls1.begin(), ls1.end(), std::less<elem_t>());
 }
