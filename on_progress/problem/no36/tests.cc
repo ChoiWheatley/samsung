@@ -1,5 +1,8 @@
 #include "solution.hpp"
+#include <algorithm>
 #include <gtest/gtest.h>
+#include <random.hpp>
+#include <set>
 #include <vector>
 
 using std::vector;
@@ -100,6 +103,24 @@ TEST(Timeout, 1) {
   auto submit = sol1::solution(int(MAX_N), p, *(check.end() - 1));
   ASSERT_EQ(answer, submit);
 }
+TEST(Timeout, 2) {
+
+  Random<u32> rand;
+  auto set = std::set<u32>{};
+  while (set.size() < MAX_N - 2) {
+    set.insert((rand.next() % MAX_N) + 1);
+  }
+  set.insert(1u);
+  set.insert(MAX_DAY);
+
+  auto check = vector<u32>(set.begin(), set.end());
+
+  for (auto e : check) {
+    bitset::set(e);
+  }
+  auto p = MAX_P / ((rand.next() % MAX_P) + 1);
+  sol1::solution(int(MAX_N), p, MAX_DAY);
+}
 TEST(Timeout2, 1) {
   auto check = vector<u32>{1u, MAX_DAY};
   for (auto e : check) {
@@ -109,4 +130,15 @@ TEST(Timeout2, 1) {
   auto answer = p + 1;
   auto submit = sol2::solution(check, p);
   ASSERT_EQ(answer, submit);
+}
+TEST(Timeout2, 2) {
+
+  Random<u32> rand;
+  auto check = std::set<u32>{};
+  while (check.size() < MAX_N) {
+    check.insert((rand.next() % MAX_DAY) + 1);
+  }
+  auto ls = vector<u32>(check.begin(), check.end());
+  auto p = MAX_P / ((rand.next() % MAX_P) + 1);
+  sol2::solution(ls, p);
 }
