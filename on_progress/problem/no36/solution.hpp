@@ -1,8 +1,12 @@
 #ifndef SOLUTION
 #define SOLUTION
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
+#include <iterator>
+#include <numeric>
+#include <vector>
 using std::array;
 using u32 = uint32_t;
 
@@ -14,7 +18,9 @@ namespace bitset {
 
 constexpr u32 BITS = sizeof(u32) * 8;
 constexpr u32 MAX_BUCKETS = MAX_DAY / BITS;
+
 static array<u32, MAX_BUCKETS + 1> _bitset;
+
 inline void init() { _bitset.fill(0); }
 inline bool check(u32 idx) {
   auto bucket = idx / BITS;
@@ -71,6 +77,8 @@ inline int first_false(int begin, int end, Predicate const &pred) {
   return first_true(begin, end, pred_inversed);
 }
 
+namespace sol1 {
+
 /**
 @notice: bitset 초기화 진행 후 호출하세요!
 
@@ -104,5 +112,77 @@ inline int solution(u32 n, u32 p, u32 last_day) {
   };
   return first_false(1, n + p, pred) - 1;
 }
+
+} // namespace sol1
+
+namespace sol2 {
+
+using std::vector;
+
+/**
+@breif:
+  length 길이에 스트릭을 만들 수 있나요?
+ sliding 과정을 효율적으로 하기 위해 set bit들 간의 거리를
+ 사용한다.
+
+@param:
+ - delta: days각 원소들 간에 차를 들고있다.
+*/
+inline bool _predicate(vector<u32> const &delta, u32 p, int length) {
+
+  if (p >= length - 1) {
+    // 처음과 끝
+    return true;
+  }
+  // 중간
+  for (auto begin = delta.begin(); begin != delta.end(); ++begin) {
+
+    int streak = 1;
+    u32 sum = 0; // delta sum
+    for (auto itr = begin; itr != delta.end(); ++itr) {
+
+      auto const &elem = *itr;
+
+      sum += elem - 1;
+      if (sum > p) {
+        break;
+      }
+      streak += elem;
+      if (streak + (p - sum) >= length) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+@breif:
+  bitset을 내부적으로 호출하기 때문에 굳이 init 할 필요 없게됨.
+@param:
+ - days: 정렬된 상태를 보장하는 영어공부를 실시한 날짜들
+ - p: 추가적으로 영어공부를 했다고 뻥칠 수 있는 날들의 개수
+*/
+inline int solution(vector<u32> const &days, u32 p) {
+
+  bitset::init();
+  for (auto e : days) {
+    bitset::set(e);
+  }
+
+  vector<u32> delta;
+  for (size_t i = 0; i < days.size() - 1; ++i) {
+    delta.emplace_back(days[i + 1] - days[i]);
+  }
+
+  return first_false( //
+             1, u32(days.size()) + p,
+             [&delta, &p](auto length) {
+               return _predicate(delta, p, length);
+             }) -
+         1;
+}
+
+} // namespace sol2
 
 #endif

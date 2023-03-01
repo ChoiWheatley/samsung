@@ -49,7 +49,7 @@ TEST(Sol, 1) {
   }
   auto p = 2;
   auto answer = 5;
-  auto submit = solution(int(check.size()), p, *(check.end() - 1));
+  auto submit = sol1::solution(int(check.size()), p, *(check.end() - 1));
   ASSERT_EQ(answer, submit);
 }
 TEST(Sol, 2) {
@@ -59,10 +59,37 @@ TEST(Sol, 2) {
   }
   auto p = 10;
   auto answer = 11;
-  auto submit = solution(int(check.size()), p, *(check.end() - 1));
+  auto submit = sol1::solution(int(check.size()), p, *(check.end() - 1));
   ASSERT_EQ(answer, submit);
 }
 
+TEST(Sol2, 1) {
+  auto check = vector<u32>{3, 5, 6, 10, 11};
+  for (auto e : check) {
+    bitset::set(e);
+  }
+  auto p = 2;
+  auto answer = 5;
+  auto submit = sol2::solution(check, p);
+  ASSERT_EQ(answer, submit);
+}
+TEST(Sol2, 2) {
+  auto check = vector<u32>{42, 420};
+  for (auto e : check) {
+    bitset::set(e);
+  }
+  auto p = 10;
+  auto answer = 11;
+  auto submit = sol2::solution(check, p);
+  ASSERT_EQ(answer, submit);
+}
+TEST(Sol2, 3) {
+  auto check = vector<u32>{1, 100, 101, 102};
+  auto p = 2;
+  auto answer = 5;
+  auto submit = sol2::solution(check, p);
+  ASSERT_EQ(answer, submit);
+}
 TEST(Timeout, 1) {
   auto check = {1u, MAX_DAY};
   for (auto e : check) {
@@ -70,6 +97,16 @@ TEST(Timeout, 1) {
   }
   auto p = MAX_P;
   auto answer = p + 1;
-  auto submit = solution(int(MAX_N), p, *(check.end() - 1));
+  auto submit = sol1::solution(int(MAX_N), p, *(check.end() - 1));
+  ASSERT_EQ(answer, submit);
+}
+TEST(Timeout2, 1) {
+  auto check = vector<u32>{1u, MAX_DAY};
+  for (auto e : check) {
+    bitset::set(e);
+  }
+  auto p = MAX_P;
+  auto answer = p + 1;
+  auto submit = sol2::solution(check, p);
   ASSERT_EQ(answer, submit);
 }
