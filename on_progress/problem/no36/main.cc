@@ -30,7 +30,7 @@ int main(void) {
       days.push_back(day);
     }
 
-    auto submit = sol2::solution(days, p);
+    auto submit = sol3::solution(days, p);
     cout << "#" << tc << " " << submit << "\n";
   }
   return 0;

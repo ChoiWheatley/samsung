@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cstdint>
 #include <iterator>
 #include <numeric>
@@ -184,5 +185,64 @@ inline int solution(vector<u32> const &days, u32 p) {
 }
 
 } // namespace sol2
+
+namespace sol3 {
+
+using std::vector;
+
+/**
+@breif: start번째 날짜부터 시작했을 때 가능한 가장 긴 연속 구간의 길이를 찾자.
+@param:
+ - blanks: 0번째부터 i번째 날짜까지 비어있는 칸의 개수
+*/
+inline int binary_search(vector<u32> const &blanks, int start, u32 p) {
+
+  auto l = start;
+  auto r = int(blanks.size()); // exclusive
+
+  // 주어진 p로 메꿀 수 있는 가장 큰 날짜번호를 구한다. -- last true
+  while (l < r) {
+
+    auto mid = l + (r - l) / 2;
+    auto blank = blanks[mid] - blanks[start];
+    if (p < blank) {
+      // go left, next range is [l, mid - 1)
+      r = mid;
+    } else {
+      // go right, next range is [mid + 1, r)
+      l = mid + 1;
+    }
+  }
+  // p를 포함하고 영어공부한 날짜의 개수도 포함한 결과가 스트릭이다.
+  return p + (l - start);
+}
+
+/**
+@breif:
+  bitset을 사용하지 않는 이진검색
+@param:
+ - days: 정렬된 상태를 보장하는 영어공부를 실시한 날짜들
+ - p: 추가적으로 영어공부를 했다고 뻥칠 수 있는 날들의 개수
+*/
+inline int solution(vector<u32> const &days, u32 p) {
+
+  // 0번째 날짜부터 i번째 날짜까지 공백의 개수
+  vector<u32> blanks;
+  std::adjacent_difference(days.begin(), days.end(), //
+                           std::back_inserter(blanks),
+                           [](auto a, auto b) { return a - b - 1; });
+  blanks[0] = 0; // 0번째 날짜는 세지 않는다.
+  std::partial_sum(blanks.begin(), blanks.end(), blanks.begin());
+
+  int max = 0;
+  // i번째 날짜부터 셀 수 있는 가장 긴 streak
+  for (size_t i = 0; i < days.size(); ++i) {
+
+    max = std::max(max, binary_search(blanks, i, p));
+  }
+
+  return max;
+}
+} // namespace sol3
 
 #endif
