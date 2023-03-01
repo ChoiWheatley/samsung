@@ -51,8 +51,8 @@ inline void reset(u32 idx) {
  - end: exclusive
  - pred: predicate, 이를 사용하여 first_true도, first_false도 가능.
 */
-template <class Predicate>
-inline int first_true(int begin, int end, Predicate const &pred) {
+template <typename T, class Predicate>
+inline T first_true(T begin, T end, Predicate const &pred) {
   auto l = begin;
   auto r = end;
   while (l != r) {
@@ -72,8 +72,8 @@ inline int first_true(int begin, int end, Predicate const &pred) {
 @breif:
   True -- False 구간의 첫번째 False를 찾아줘요.
 */
-template <class Predicate>
-inline int first_false(int begin, int end, Predicate const &pred) {
+template <typename T, class Predicate>
+inline T first_false(T begin, T end, Predicate const &pred) {
   auto pred_inversed = [&pred](auto i) { return !pred(i); };
   return first_true(begin, end, pred_inversed);
 }
@@ -111,7 +111,7 @@ inline int solution(u32 n, u32 p, u32 last_day) {
     }
     return false;
   };
-  return first_false(1, n + p, pred) - 1;
+  return first_false<u32>(1, n + p, pred) - 1;
 }
 
 } // namespace sol1
@@ -176,7 +176,7 @@ inline int solution(vector<u32> const &days, u32 p) {
     delta.emplace_back(days[i + 1] - days[i]);
   }
 
-  return first_false( //
+  return first_false<u32>( //
              1, u32(days.size()) + p,
              [&delta, &p](auto length) {
                return _predicate(delta, p, length);
@@ -206,7 +206,7 @@ inline int binary_search(vector<u32> const &blanks, int start, u32 p) {
     auto mid = l + (r - l) / 2;
     auto blank = blanks[mid] - blanks[start];
     if (p < blank) {
-      // go left, next range is [l, mid - 1)
+      // go left, next range is [l, mid)
       r = mid;
     } else {
       // go right, next range is [mid + 1, r)
@@ -244,5 +244,51 @@ inline int solution(vector<u32> const &days, u32 p) {
   return max;
 }
 } // namespace sol3
+
+/**
+refactored sol3
+*/
+namespace sol4 {
+
+using std::vector;
+
+/**
+@breif:
+  bitset을 사용하지 않는 이진검색
+@param:
+ - days: 정렬된 상태를 보장하는 영어공부를 실시한 날짜들
+ - p: 추가적으로 영어공부를 했다고 뻥칠 수 있는 날들의 개수
+*/
+inline size_t solution(vector<u32> const &days, u32 p) {
+
+  // 0번째 날짜부터 i번째 날짜까지 공백의 개수
+  vector<u32> blanks;
+  std::adjacent_difference(days.begin(), days.end(), //
+                           std::back_inserter(blanks),
+                           [](auto a, auto b) { return a - b - 1; });
+  blanks[0] = 0; // 0번째 날짜는 세지 않는다.
+  std::partial_sum(blanks.begin(), blanks.end(), blanks.begin());
+
+  size_t max = 0;
+
+  for (size_t i = 0; i < days.size(); ++i) {
+
+    // i번째 날짜부터 p로 다 채우지 못하는 첫번째 날짜
+    auto upper_bound = first_true(i, days.size(), [&blanks, &i, &p](u32 day) {
+      auto blank = blanks[day] - blanks[i];
+      return p < blank;
+    });
+
+    // streak의 길이는 p를 포함하고 영어공부한 날도 포함이다.
+    // 이때 영어공부한 날의 수는 시작한 날인 i부터 p로 채울 수 있는
+    // 마지막 날짜를 구한다. 따라서 p + (upper_bound - 1) - (i - 1)
+    auto streak = p + (upper_bound - i);
+
+    max = std::max(max, streak);
+  }
+
+  return max;
+}
+} // namespace sol4
 
 #endif

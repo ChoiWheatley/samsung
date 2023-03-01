@@ -120,6 +120,33 @@ TEST(Sol3, 3) {
   auto submit = sol3::solution(check, p);
   ASSERT_EQ(answer, submit);
 }
+TEST(Sol4, 1) {
+  auto check = vector<u32>{3, 5, 6, 10, 11};
+  for (auto e : check) {
+    bitset::set(e);
+  }
+  auto p = 2;
+  auto answer = 5;
+  auto submit = sol4::solution(check, p);
+  ASSERT_EQ(answer, submit);
+}
+TEST(Sol4, 2) {
+  auto check = vector<u32>{42, 420};
+  for (auto e : check) {
+    bitset::set(e);
+  }
+  auto p = 10;
+  auto answer = 11;
+  auto submit = sol4::solution(check, p);
+  ASSERT_EQ(answer, submit);
+}
+TEST(Sol4, 3) {
+  auto check = vector<u32>{1, 100, 101, 102};
+  auto p = 2;
+  auto answer = 5;
+  auto submit = sol4::solution(check, p);
+  ASSERT_EQ(answer, submit);
+}
 TEST(Timeout, 1) {
   auto check = {1u, MAX_DAY};
   for (auto e : check) {
