@@ -1,4 +1,3 @@
-#include "solution.hpp"
 #include <algorithm>
 #include <cmath>
 #include <ios>
@@ -58,8 +57,7 @@ int main(void) {
 
       // 어떤 말에 대하여 (말 <= 소) 조건을 만족시키는 첫번째 말을 고른다.
       // 그 말의 바로 이전 말과 비교하여 더 가까운 놈을 선택한다.
-      auto cow_itr = first_true(cows.begin(), cows.end(),
-                                [horse](auto itr) { return horse <= *itr; });
+      auto cow_itr = std::upper_bound(cows.begin(), cows.end(), horse);
       if (cow_itr != cows.end()) {
         evaluate(abs(horse - *cow_itr));
       }
